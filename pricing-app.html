@@ -117,7 +117,7 @@ body{font-family:"IBM Plex Sans Arabic","Tajawal",system-ui,sans-serif;backgroun
 
 #root{
   width:100%;
-  min-height:100vh;
+  height:100%;
   display:flex;
   flex-direction:column;
   background:var(--bg);
@@ -195,7 +195,8 @@ body{font-family:"IBM Plex Sans Arabic","Tajawal",system-ui,sans-serif;backgroun
 
 .app-container{
   width:100%;
-  min-height:100vh;
+  height:100%;
+  max-height:100vh;
   display:flex;
   flex-direction:column;
   overflow:hidden;
@@ -208,9 +209,14 @@ body{font-family:"IBM Plex Sans Arabic","Tajawal",system-ui,sans-serif;backgroun
   overflow-y:auto;
   overflow-x:hidden;
   min-height: 0;
+  padding-bottom:80px;
 }
 
 .bottom-bar{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
   flex-shrink:0;
   background:var(--surface);
   border-top:1px solid var(--line);
@@ -219,6 +225,7 @@ body{font-family:"IBM Plex Sans Arabic","Tajawal",system-ui,sans-serif;backgroun
   grid-template-columns:repeat(auto-fit, minmax(90px, 1fr));
   gap:4px;
   overflow-x:auto;
+  z-index:998;
 }
 
 .nav-item{
