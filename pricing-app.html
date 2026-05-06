@@ -317,8 +317,177 @@ button{
   font-variant-numeric:tabular-nums;
 }
 
-@media (max-width:640px){
-  .kpi-grid{grid-template-columns:1fr}
+/* ===== MOBILE RESPONSIVE DESIGN (max-width: 768px) ===== */
+@media (max-width:768px){
+  /* Container and layout */
+  .app-container {
+    height: 100vh;
+  }
+
+  .app-content {
+    padding-bottom: 80px;
+  }
+
+  /* Bottom navigation bar - ALWAYS VISIBLE on mobile */
+  .bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    background: var(--surface);
+    border-top: 2px solid var(--line);
+    padding: 8px 4px;
+    gap: 4px;
+    z-index: 999;
+    grid-template-columns: auto;
+  }
+
+  .nav-item {
+    padding: 8px 12px;
+    font-size: 12px;
+    flex: 0 1 auto;
+    min-width: 60px;
+  }
+
+  .nav-item svg {
+    width: 20px;
+    height: 20px;
+    margin-bottom: 2px;
+  }
+
+  /* KPI Grid - single column */
+  .kpi-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin: 10px;
+  }
+
+  .kpi-card {
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  /* Cards */
+  .card {
+    margin: 10px;
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  /* Text sizing */
+  h1 { font-size: 20px; }
+  h2 { font-size: 16px; }
+  h3 { font-size: 14px; }
+  p, label, span { font-size: 13px; }
+
+  /* Table - scrollable on mobile */
+  .table-container {
+    margin: 10px;
+  }
+
+  table {
+    font-size: 12px;
+  }
+
+  th {
+    padding: 8px;
+    font-size: 11px;
+  }
+
+  td {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  /* Input and button sizing */
+  input, select, button {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  button {
+    min-height: 40px;
+  }
+
+  /* Tweaks panel - hide on mobile */
+  .tweaks-panel {
+    display: none !important;
+  }
+
+  /* Sections spacing */
+  .screen {
+    padding-bottom: 90px;
+  }
+
+  /* Badge sizing */
+  .badge {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+
+  /* Material table adjustments */
+  .materials-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 10px;
+    background: var(--bg-soft);
+    border-radius: 8px;
+  }
+
+  .material-input {
+    width: 100%;
+  }
+}
+
+/* ===== TABLET RESPONSIVE DESIGN (768px - 1024px) ===== */
+@media (min-width:769px) and (max-width:1024px){
+  .kpi-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .bottom-bar {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .nav-item {
+    padding: 10px;
+    font-size: 12px;
+  }
+}
+
+/* ===== DESKTOP RESPONSIVE DESIGN (min-width: 1025px) ===== */
+@media (min-width:1025px){
+  .kpi-grid {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 15px;
+  }
+
+  .bottom-bar {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+
+  .nav-item {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .nav-item svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .card {
+    margin: 16px;
+    padding: 16px;
+  }
 }
 </style>
 </head>
