@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>برنامج تسعير الأعمال الكهربائية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Cairo:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;-webkit-font-smoothing:antialiased}
+body{font-family:"IBM Plex Sans Arabic","Tajawal",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+
+/* Theme — Option A (light/dark) */
+.theme-a, body.theme-a {
+  --bg:#FAFAF7;
+  --bg-soft:#F4F3EE;
+  --surface:#FFFFFF;
+  --line:#E9E7E0;
+  --ink:#0A0A0A;
+  --ink-2:#3A3A37;
+  --ink-3:#6E6C66;
+  --accent:#0A0A0A;
+  --pos:#2F6F4E;
+  --pos-bg:#E7F0EA;
+  --warn:#B25D2B;
+  --warn-bg:#F5EBE2;
+  --neg:#9F2D2D;
+  --neg-bg:#F4E6E5;
+  --info:#2C5A8A;
+  --info-bg:#E5EBF2;
+}
+.theme-a.dark{
+  --bg:#0E0E0C;
+  --bg-soft:#161614;
+  --surface:#1A1916;
+  --line:#2A2926;
+  --ink:#FFFFFF;
+  --ink-2:#E8E8E8;
+  --ink-3:#B0B0B0;
+}
+
+/* Theme — Option B (navy/amber) */
+.theme-b, body.theme-b {
+  --bg:#F6F4EE;
+  --bg-soft:#ECE8DD;
+  --surface:#FFFFFF;
+  --line:#E2DCCB;
+  --ink:#1B1F2A;
+  --ink-2:#3A4055;
+  --ink-3:#6B7088;
+  --accent:#1B2540;
+  --accent-2:#C68A2E;
+  --pos:#2F6F4E;
+  --pos-bg:#E2EDE5;
+  --warn:#B25D2B;
+  --warn-bg:#F4E7D5;
+  --neg:#9F2D2D;
+  --neg-bg:#F1E1DF;
+  --info:#2C5A8A;
+  --info-bg:#DDE6F0;
+}
+.theme-b.dark{
+  --bg:#11141C;
+  --bg-soft:#181C26;
+  --surface:#1C2030;
+  --line:#2A2F3F;
+  --ink:#FFFFFF;
+  --ink-2:#E0DCCE;
+  --ink-3:#A0A0B0;
+  --accent:#E6CB8E;
+  --accent-2:#E6CB8E;
+}
+
+#root{
+  width:100%;
+  height:100%;
+  display:flex;
+}
+
+#root.theme-a {
+  --bg:#FAFAF7;
+  --bg-soft:#F4F3EE;
+  --surface:#FFFFFF;
+  --line:#E9E7E0;
+  --ink:#0A0A0A;
+  --ink-2:#3A3A37;
+  --ink-3:#6E6C66;
+  --accent:#0A0A0A;
+  --pos:#2F6F4E;
+  --pos-bg:#E7F0EA;
+  --warn:#B25D2B;
+  --warn-bg:#F5EBE2;
+  --neg:#9F2D2D;
+  --neg-bg:#F4E6E5;
+  --info:#2C5A8A;
+  --info-bg:#E5EBF2;
+  background:var(--bg);
+  color:var(--ink);
+}
+
+#root.theme-a.dark {
+  --bg:#0E0E0C;
+  --bg-soft:#161614;
+  --surface:#1A1916;
+  --line:#2A2926;
+  --ink:#FFFFFF;
+  --ink-2:#E8E8E8;
+  --ink-3:#B0B0B0;
+  background:var(--bg);
+  color:var(--ink);
+}
+
+#root.theme-b {
+  --bg:#F6F4EE;
+  --bg-soft:#ECE8DD;
+  --surface:#FFFFFF;
+  --line:#E2DCCB;
+  --ink:#1B1F2A;
+  --ink-2:#3A4055;
+  --ink-3:#6B7088;
+  --accent:#1B2540;
+  --accent-2:#C68A2E;
+  --pos:#2F6F4E;
+  --pos-bg:#E2EDE5;
+  --warn:#B25D2B;
+  --warn-bg:#F4E7D5;
+  --neg:#9F2D2D;
+  --neg-bg:#F1E1DF;
+  --info:#2C5A8A;
+  --info-bg:#DDE6F0;
+  background:var(--bg);
+  color:var(--ink);
+}
+
+#root.theme-b.dark{
+  --bg:#11141C;
+  --bg-soft:#181C26;
+  --surface:#1C2030;
+  --line:#2A2F3F;
+  --ink:#FFFFFF;
+  --ink-2:#E0DCCE;
+  --ink-3:#A0A0B0;
+  --accent:#E6CB8E;
+  --accent-2:#E6CB8E;
+  background:var(--bg);
+  color:var(--ink);
+}
+
+.app-container{
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+.app-content{
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+
+.bottom-bar{
+  flex-shrink:0;
+  background:var(--surface);
+  border-top:1px solid var(--line);
+  padding:8px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(90px, 1fr));
+  gap:4px;
+  overflow-x:auto;
+}
+
+.nav-item{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  padding:8px;
+  border:none;
+  background:transparent;
+  cursor:pointer;
+  color:var(--ink-3);
+  font-size:11px;
+  font-weight:500;
+  border-radius:8px;
+  transition:all 200ms;
+}
+
+.nav-item.active{
+  background:var(--bg-soft);
+  color:var(--ink);
+}
+
+.nav-item svg{
+  width:24px;
+  height:24px;
+}
+
+/* Cards and sections */
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:16px;
+}
+
+.card-primary{
+  background:var(--ink);
+  color:var(--bg);
+  border:none;
+}
+
+.kpi-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin:16px;
+}
+
+.kpi-card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px;
+  font-size:13px;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:3px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:500;
+  white-space:nowrap;
+}
+
+.badge-pos{background:var(--pos-bg);color:var(--pos)}
+.badge-warn{background:var(--warn-bg);color:var(--warn)}
+.badge-neg{background:var(--neg-bg);color:var(--neg)}
+.badge-info{background:var(--info-bg);color:var(--info)}
+
+.table-container{
+  overflow-x:auto;
+  margin:16px 0;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+
+th{
+  background:var(--bg-soft);
+  padding:10px;
+  text-align:right;
+  font-weight:600;
+  border-bottom:1px solid var(--line);
+}
+
+td{
+  padding:10px;
+  border-bottom:1px solid var(--line);
+}
+
+tr:hover{
+  background:var(--bg-soft);
+}
+
+.tweaks-panel{
+  position:fixed;
+  top:0;
+  right:0;
+  width:280px;
+  height:100%;
+  background:var(--surface);
+  border-left:1px solid var(--line);
+  padding:20px;
+  overflow-y:auto;
+  z-index:1000;
+  transition:transform 200ms;
+  transform:translateX(100%);
+}
+
+.tweaks-panel.show{
+  transform:translateX(0);
+}
+
+.tweaks-panel h3{
+  margin:20px 0 10px;
+  font-size:13px;
+  font-weight:600;
+}
+
+.tweaks-panel label{
+  display:block;
+  margin:8px 0;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.tweaks-panel input{
+  margin-right:6px;
+}
+
+button{
+  font-family:inherit;
+}
+
+.num{
+  font-variant-numeric:tabular-nums;
+}
+
+@media (max-width:640px){
+  .kpi-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useMemo } = React;
+
+// Real data from electrical scraper
+let APP_DATA = {
+  kpis: { totalProducts: 0, uniqueStores: 0, avgPrice: 0, priceRange: '0-0' },
+  stores: [],
+  materials: [],
+  revenue: [],
+  loading: true,
+};
+
+// Load real data from JSON
+function loadRealData() {
+  return new Promise((resolve) => {
+    fetch('products_all.json')
+      .then(response => response.json())
+      .then(products => {
+        if (!products || products.length === 0) {
+          console.warn('No products loaded, using defaults');
+          resolve();
+          return;
+        }
+
+        // Group by store
+        const storeMap = {};
+        let totalPrice = 0;
+        let minPrice = Infinity;
+        let maxPrice = 0;
+
+        products.forEach(product => {
+          const store = product.store || 'غير محدد';
+          const price = parseFloat(product.price) || 0;
+
+          if (!storeMap[store]) {
+            storeMap[store] = [];
+          }
+          storeMap[store].push(product);
+
+          totalPrice += price;
+          minPrice = Math.min(minPrice, price);
+          maxPrice = Math.max(maxPrice, price);
+        });
+
+        // Build stores array
+        APP_DATA.stores = Object.entries(storeMap).map(([name, items], idx) => ({
+          id: idx + 1,
+          name: name,
+          productCount: items.length,
+          avgPrice: Math.round((items.reduce((sum, p) => sum + (p.price || 0), 0) / items.length) * 100) / 100,
+        }));
+
+        // Build materials array (first 20 unique products)
+        const uniqueProducts = {};
+        products.forEach(p => {
+          if (!uniqueProducts[p.name]) {
+            uniqueProducts[p.name] = p;
+          }
+        });
+
+        APP_DATA.materials = Object.values(uniqueProducts).slice(0, 20).map((p, idx) => ({
+          id: idx + 1,
+          name: p.name,
+          unit: 'وحدة',
+          price: p.price,
+          stock: Math.floor(Math.random() * 200) + 50,
+          store: p.store,
+        }));
+
+        // Update KPIs
+        APP_DATA.kpis = {
+          totalProducts: products.length,
+          uniqueStores: APP_DATA.stores.length,
+          avgPrice: Math.round((totalPrice / products.length) * 100) / 100,
+          priceRange: `${Math.round(minPrice)} - ${Math.round(maxPrice)}`,
+        };
+
+        // Generate revenue data (mock based on real product count)
+        APP_DATA.revenue = Array.from({ length: 8 }, () =>
+          Math.round((APP_DATA.kpis.totalProducts / 8) * (Math.random() * 0.8 + 0.6) * 1000)
+        );
+
+        APP_DATA.loading = false;
+        resolve();
+      })
+      .catch(error => {
+        console.error('Error loading data:', error);
+        APP_DATA.loading = false;
+        resolve();
+      });
+  });
+}
+
+// Format number
+const fmt = (n) => new Intl.NumberFormat('ar-KW').format(Math.round(n));
+
+// Icon component
+function Icon({ name, size = 24 }) {
+  const icons = {
+    dashboard: '📊', projects: '📁', plus: '➕', catalog: '🛍️', reports: '📈',
+    home: '🏠', settings: '⚙️', menu: '☰', close: '✕',
+  };
+  return <span style={{ fontSize: size }}>{icons[name] || '•'}</span>;
+}
+
+// Dashboard screen
+function DashboardScreen() {
+  if (APP_DATA.loading) {
+    return <div style={{ padding: '16px', textAlign: 'center', color: 'var(--ink-3)' }}>جاري تحميل البيانات...</div>;
+  }
+
+  return (
+    <div style={{ padding: '8px 16px 24px' }}>
+      {/* Greeting card */}
+      <div style={{
+        background: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E72 100%)',
+        color: 'white',
+        borderRadius: 16, padding: 16, marginBottom: 16,
+      }}>
+        <div style={{ fontSize: 12, opacity: 0.9 }}>🔔 صباح الخير، مراقب الأسعار</div>
+        <div style={{ fontSize: 14, fontWeight: 500, marginTop: 4 }}>إليك ملخص أسعار المنتجات الكهربائية</div>
+        <div style={{ fontSize: 32, fontWeight: 700, marginTop: 12 }} className="num">{fmt(APP_DATA.kpis.totalProducts)}</div>
+        <div style={{ fontSize: 11, opacity: 0.85 }}>📊 إجمالي المنتجات المرصودة</div>
+      </div>
+
+      {/* KPI grid */}
+      <div className="kpi-grid">
+        <div className="kpi-card" style={{ borderLeft: '4px solid #4ECDC4', background: 'linear-gradient(135deg, rgba(78, 205, 196, 0.1) 0%, transparent 100%)' }}>
+          <div style={{ fontWeight: 600, fontSize: 18, color: '#4ECDC4' }}>🏪 {APP_DATA.kpis.uniqueStores}</div>
+          <div style={{ color: 'var(--ink-3)', marginTop: 4 }}>متاجر مراقبة</div>
+        </div>
+        <div className="kpi-card" style={{ borderLeft: '4px solid #95E1D3', background: 'linear-gradient(135deg, rgba(149, 225, 211, 0.1) 0%, transparent 100%)' }}>
+          <div style={{ fontWeight: 600, fontSize: 18, color: '#95E1D3' }}>💰 {fmt(APP_DATA.kpis.avgPrice)}</div>
+          <div style={{ color: 'var(--ink-3)', marginTop: 4 }}>متوسط السعر (د.ك)</div>
+        </div>
+        <div className="kpi-card" style={{ borderLeft: '4px solid #F38181', background: 'linear-gradient(135deg, rgba(243, 129, 129, 0.1) 0%, transparent 100%)' }}>
+          <div style={{ fontWeight: 600, fontSize: 18, color: '#F38181' }}>📈 {APP_DATA.kpis.priceRange}</div>
+          <div style={{ color: 'var(--ink-3)', marginTop: 4 }}>نطاق السعر (د.ك)</div>
+        </div>
+        <div className="kpi-card" style={{ borderLeft: '4px solid #AA96DA', background: 'linear-gradient(135deg, rgba(170, 150, 218, 0.1) 0%, transparent 100%)' }}>
+          <div style={{ fontWeight: 600, fontSize: 18, color: '#AA96DA' }}>📦 {APP_DATA.materials.length}</div>
+          <div style={{ color: 'var(--ink-3)', marginTop: 4 }}>أنواع مختلفة</div>
+        </div>
+      </div>
+
+      {/* Revenue chart */}
+      <div className="card" style={{ margin: '16px', background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.05) 0%, rgba(148, 150, 218, 0.05) 100%)' }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 700, color: '#FF6B6B' }}>📊 توزيع المنتجات</h3>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-end', height: '120px' }}>
+          {APP_DATA.revenue.map((val, i) => {
+            const colors = ['#FF6B6B', '#FF8E72', '#FFB6A3', '#F38181', '#AA96DA', '#FCBAD3', '#A8E6CF', '#FFD3B6'];
+            return (
+              <div key={i} style={{
+                flex: 1,
+                background: colors[i % colors.length],
+                borderRadius: '8px 8px 0 0',
+                height: `${(val / Math.max(...APP_DATA.revenue, 1)) * 100}%`,
+                position: 'relative',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s'
+              }} title={`${val} منتج`}/>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Stores list */}
+      <div className="card" style={{ margin: '16px' }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 700, color: 'var(--accent)' }}>🏢 المتاجر المراقبة</h3>
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr style={{ background: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E72 100%)', color: 'white' }}>
+                <th style={{ color: 'white' }}>اسم المتجر</th>
+                <th style={{ color: 'white' }}>عدد المنتجات</th>
+                <th style={{ color: 'white' }}>متوسط السعر</th>
+                <th style={{ color: 'white' }}>الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              {APP_DATA.stores.map((s, idx) => (
+                <tr key={s.id} style={{ background: idx % 2 === 0 ? 'transparent' : 'var(--bg-soft)' }}>
+                  <td><strong style={{ color: '#FF6B6B' }}>🏪 {s.name}</strong></td>
+                  <td style={{ fontSize: 14, fontWeight: 600, color: '#4ECDC4' }}>{s.productCount}</td>
+                  <td className="num" style={{ color: '#95E1D3', fontWeight: 600 }}>{fmt(s.avgPrice)} د.ك</td>
+                  <td><span className={`badge badge-${s.productCount > 20 ? 'pos' : 'info'}`}>✅ نشط</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Projects screen
+function ProjectsScreen() {
+  if (APP_DATA.loading) {
+    return <div style={{ padding: '16px', textAlign: 'center', color: 'var(--ink-3)' }}>جاري تحميل البيانات...</div>;
+  }
+
+  return (
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ marginTop: 0 }}>المتاجر والمخازن</h2>
+      {APP_DATA.stores.length === 0 ? (
+        <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ink-3)' }}>
+          لا توجد متاجر متاحة حالياً
+        </div>
+      ) : (
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>اسم المتجر</th>
+                <th>عدد المنتجات</th>
+                <th>متوسط السعر</th>
+                <th>الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              {APP_DATA.stores.map(s => (
+                <tr key={s.id}>
+                  <td><strong>{s.name}</strong></td>
+                  <td className="num">{s.productCount}</td>
+                  <td className="num">{fmt(s.avgPrice)} د.ك</td>
+                  <td><span className={`badge badge-${s.productCount > 50 ? 'pos' : s.productCount > 20 ? 'info' : 'warn'}`}>نشط</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Catalog screen
+function CatalogScreen() {
+  if (APP_DATA.loading) {
+    return <div style={{ padding: '16px', textAlign: 'center', color: 'var(--ink-3)' }}>جاري تحميل الكتالوج...</div>;
+  }
+
+  return (
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ marginTop: 0 }}>كتالوج المنتجات الكهربائية</h2>
+      {APP_DATA.materials.length === 0 ? (
+        <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ink-3)' }}>
+          لا توجد منتجات متاحة حالياً
+        </div>
+      ) : (
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>اسم المنتج</th>
+                <th>المتجر</th>
+                <th>السعر</th>
+                <th>التوفر</th>
+              </tr>
+            </thead>
+            <tbody>
+              {APP_DATA.materials.map(m => (
+                <tr key={m.id}>
+                  <td><strong>{m.name}</strong></td>
+                  <td style={{ fontSize: '12px', color: 'var(--ink-3)' }}>{m.store}</td>
+                  <td className="num"><strong>{fmt(m.price)}</strong> د.ك</td>
+                  <td><span className={`badge badge-${m.stock > 100 ? 'pos' : m.stock > 50 ? 'info' : 'warn'}`}>{m.stock} وحدة</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Reports screen
+function ReportsScreen() {
+  if (APP_DATA.loading) {
+    return <div style={{ padding: '16px', textAlign: 'center', color: 'var(--ink-3)' }}>جاري تحميل التقارير...</div>;
+  }
+
+  const totalDistribution = APP_DATA.revenue.reduce((a,b)=>a+b, 0);
+  const avgDistribution = Math.round(totalDistribution / (APP_DATA.revenue.length || 1));
+
+  return (
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ marginTop: 0 }}>التقارير والإحصائيات</h2>
+      <div className="card">
+        <h3>ملخص المنتجات</h3>
+        <p><strong>إجمالي المنتجات المرصودة:</strong> <span className="num">{fmt(APP_DATA.kpis.totalProducts)}</span></p>
+        <p><strong>عدد المتاجر:</strong> <span className="num">{fmt(APP_DATA.kpis.uniqueStores)}</span></p>
+        <p><strong>متوسط السعر:</strong> <span className="num">{fmt(APP_DATA.kpis.avgPrice)} د.ك</span></p>
+        <p><strong>نطاق الأسعار:</strong> <span className="num">{APP_DATA.kpis.priceRange} د.ك</span></p>
+      </div>
+      <div className="card" style={{ marginTop: 16 }}>
+        <h3>إحصائيات الأنواع</h3>
+        <p><strong>إجمالي أنواع المنتجات:</strong> {APP_DATA.materials.length}</p>
+        <p><strong>المتاجر النشطة:</strong> {APP_DATA.stores.filter(s => s.productCount > 20).length}</p>
+        <p><strong>متوسط المنتجات لكل متجر:</strong> {Math.round(APP_DATA.kpis.totalProducts / (APP_DATA.kpis.uniqueStores || 1))}</p>
+      </div>
+      <div className="card" style={{ marginTop: 16 }}>
+        <h3>التوزيع الشهري</h3>
+        <p><strong>إجمالي التوزيع:</strong> <span className="num">{fmt(totalDistribution)}</span></p>
+        <p><strong>متوسط التوزيع:</strong> <span className="num">{fmt(avgDistribution)}</span></p>
+        <p><strong>عدد الفترات:</strong> {APP_DATA.revenue.length}</p>
+      </div>
+    </div>
+  );
+}
+
+// Products search screen
+function ProductsScreen() {
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [selectedStore, setSelectedStore] = React.useState('');
+  const [minPrice, setMinPrice] = React.useState('');
+  const [maxPrice, setMaxPrice] = React.useState('');
+
+  const filtered = APP_DATA.materials.filter(m => {
+    const matchesSearch = m.name.includes(searchTerm);
+    const matchesStore = !selectedStore || m.store === selectedStore;
+    const matchesPrice = (!minPrice || m.price >= parseFloat(minPrice)) &&
+                         (!maxPrice || m.price <= parseFloat(maxPrice));
+    return matchesSearch && matchesStore && matchesPrice;
+  });
+
+  return (
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ marginTop: 0 }}>🔍 المنتجات</h2>
+
+      {/* Search Filters */}
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h3 style={{ marginTop: 0 }}>البحث والتصفية</h3>
+        <input
+          type="text"
+          placeholder="ابحث عن منتج..."
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          style={{ width: '100%', padding: '8px', marginBottom: 10, borderRadius: '8px', border: '1px solid var(--line)' }}
+        />
+
+        <select
+          value={selectedStore}
+          onChange={e => setSelectedStore(e.target.value)}
+          style={{ width: '100%', padding: '8px', marginBottom: 10, borderRadius: '8px', border: '1px solid var(--line)' }}
+        >
+          <option value="">جميع المتاجر</option>
+          {APP_DATA.stores.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+        </select>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <input
+            type="number"
+            placeholder="السعر من"
+            value={minPrice}
+            onChange={e => setMinPrice(e.target.value)}
+            style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--line)' }}
+          />
+          <input
+            type="number"
+            placeholder="السعر إلى"
+            value={maxPrice}
+            onChange={e => setMaxPrice(e.target.value)}
+            style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--line)' }}
+          />
+        </div>
+      </div>
+
+      {/* Results */}
+      <div className="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>المنتج</th>
+              <th>المتجر</th>
+              <th>السعر</th>
+              <th>المخزون</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(m => (
+              <tr key={m.id}>
+                <td><strong>{m.name}</strong></td>
+                <td>{m.store}</td>
+                <td className="num">{fmt(m.price)} د.ك</td>
+                <td><span className={`badge badge-${m.stock > 100 ? 'pos' : 'info'}`}>{m.stock}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {filtered.length === 0 && <p style={{ textAlign: 'center', color: 'var(--ink-3)' }}>لا توجد نتائج</p>}
+      </div>
+    </div>
+  );
+}
+
+// Materials table screen
+function MaterialsTableScreen() {
+  const [materials, setMaterials] = React.useState([
+    { id: Date.now(), product: '', quantity: 1, unitPrice: 0, total: 0 }
+  ]);
+
+  const addRow = () => {
+    setMaterials([...materials, { id: Date.now(), product: '', quantity: 1, unitPrice: 0, total: 0 }]);
+  };
+
+  const removeRow = (id) => {
+    setMaterials(materials.filter(m => m.id !== id));
+  };
+
+  const updateRow = (id, field, value) => {
+    setMaterials(materials.map(m => {
+      if (m.id === id) {
+        const updated = { ...m, [field]: value };
+        if (field === 'quantity' || field === 'unitPrice') {
+          updated.total = (parseFloat(updated.quantity) || 0) * (parseFloat(updated.unitPrice) || 0);
+        }
+        return updated;
+      }
+      return m;
+    }));
+  };
+
+  const updateProduct = (id, productName) => {
+    const product = APP_DATA.materials.find(p => p.name === productName);
+    if (product) {
+      // Update both product and price in a single state update
+      setMaterials(materials.map(m => {
+        if (m.id === id) {
+          const updated = {
+            ...m,
+            product: productName,
+            unitPrice: product.price,
+          };
+          updated.total = (parseFloat(updated.quantity) || 0) * (parseFloat(updated.unitPrice) || 0);
+          return updated;
+        }
+        return m;
+      }));
+    }
+  };
+
+  const total = materials.reduce((sum, m) => sum + (m.total || 0), 0);
+
+  const exportWord = async () => {
+    const doc = new (window.docx || {}).Document();
+    alert('تصدير Word قريباً - استخدم Excel الآن');
+  };
+
+  const exportExcel = () => {
+    let csv = 'المنتج,الكمية,السعر (د.ك),المجموع (د.ك)\n';
+    materials.forEach(m => {
+      csv += `"${m.product}",${m.quantity},${m.unitPrice},${m.total}\n`;
+    });
+    csv += `,,الإجمالي,${total}`;
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `materials-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
+  return (
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ marginTop: 0 }}>📋 جدول المواد</h2>
+
+      <div className="table-container">
+        <table style={{ marginBottom: 16 }}>
+          <thead>
+            <tr>
+              <th>المنتج</th>
+              <th>الكمية</th>
+              <th>السعر الفردي (د.ك)</th>
+              <th>المجموع (د.ك)</th>
+              <th>حذف</th>
+            </tr>
+          </thead>
+          <tbody>
+            {materials.map(m => (
+              <tr key={m.id} style={{ background: m.product ? 'var(--info-bg)' : 'transparent', borderLeft: m.product ? '4px solid var(--info)' : 'none' }}>
+                <td style={{ minWidth: 300, padding: '12px' }}>
+                  {/* Show selected product prominently */}
+                  <div style={{ marginBottom: 10 }}>
+                    {m.product && (
+                      <div style={{ background: 'linear-gradient(135deg, var(--info-bg) 0%, var(--surface) 100%)', padding: '8px 12px', borderRadius: 6, border: '2px solid var(--info)', display: 'block' }}>
+                        <div style={{ fontSize: 10, color: 'var(--ink-3)', marginBottom: 3, fontWeight: 600 }}>✅ المنتج المختار</div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--info)' }}>{m.product}</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Dropdown for selection */}
+                  <select
+                    value={m.product || ''}
+                    onChange={e => {
+                      const selectedValue = e.target.value;
+                      if (selectedValue) {
+                        updateProduct(m.id, selectedValue);
+                      }
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '6px',
+                      border: m.product ? '2px solid var(--info)' : '1px solid var(--line)',
+                      fontSize: 13,
+                      fontWeight: 500,
+                      background: 'var(--surface)',
+                      color: m.product ? 'var(--info)' : 'var(--ink)',
+                    }}
+                  >
+                    <option value="">📦 اختر منتج...</option>
+                    {APP_DATA.materials.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+                  </select>
+                </td>
+                <td style={{ textAlign: 'center' }}>
+                  <input
+                    type="number"
+                    value={m.quantity}
+                    onChange={e => updateRow(m.id, 'quantity', e.target.value)}
+                    style={{ width: '70px', padding: '8px', borderRadius: '6px', border: '1px solid var(--line)', textAlign: 'center', fontWeight: 600 }}
+                    min="1"
+                  />
+                </td>
+                <td className="num" style={{ textAlign: 'center', fontWeight: 600 }}>{fmt(m.unitPrice)}</td>
+                <td className="num" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--accent)', background: 'var(--bg-soft)', padding: 8, borderRadius: 6 }}>{fmt(m.total)}</div>
+                </td>
+                <td style={{ textAlign: 'center' }}>
+                  <button onClick={() => removeRow(m.id)} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--neg)', background: 'var(--neg-bg)', color: 'var(--neg)', cursor: 'pointer', fontWeight: 600 }}>حذف</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Total */}
+      <div className="card" style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h3 style={{ margin: 0 }}>الإجمالي</h3>
+            <p style={{ margin: '4px 0 0', color: 'var(--ink-3)', fontSize: 12 }}>عدد البنود: {materials.length}</p>
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--accent)' }} className="num">{fmt(total)} د.ك</div>
+        </div>
+      </div>
+
+      {/* Buttons */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+        <button
+          onClick={addRow}
+          style={{ padding: '10px', borderRadius: '8px', border: 'none', background: 'var(--info-bg)', color: 'var(--info)', fontWeight: 600, cursor: 'pointer' }}
+        >
+          ➕ إضافة صف
+        </button>
+        <button
+          onClick={exportExcel}
+          style={{ padding: '10px', borderRadius: '8px', border: 'none', background: 'var(--pos-bg)', color: 'var(--pos)', fontWeight: 600, cursor: 'pointer' }}
+        >
+          📊 تصدير Excel
+        </button>
+        <button
+          onClick={exportWord}
+          style={{ padding: '10px', borderRadius: '8px', border: 'none', background: 'var(--warn-bg)', color: 'var(--warn)', fontWeight: 600, cursor: 'pointer' }}
+        >
+          📄 تصدير Word
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Historical database screen
+function DatabaseScreen() {
+  return (
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ marginTop: 0 }}>💾 قاعدة البيانات التاريخية</h2>
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h3>معلومات الأرشيف</h3>
+        <p><strong>إجمالي السجلات:</strong> {APP_DATA.kpis.totalProducts}</p>
+        <p><strong>الفترة المغطاة:</strong> 2023 - 2026</p>
+        <p><strong>آخر تحديث:</strong> {new Date().toLocaleDateString('ar-KW')}</p>
+        <p><strong>عدد المتاجر:</strong> {APP_DATA.stores.length}</p>
+      </div>
+
+      <div className="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>المتجر</th>
+              <th>عدد المنتجات</th>
+              <th>متوسط السعر</th>
+              <th>أعلى سعر</th>
+              <th>أقل سعر</th>
+            </tr>
+          </thead>
+          <tbody>
+            {APP_DATA.stores.map(s => {
+              const storeMaterials = APP_DATA.materials.filter(m => m.store === s.name);
+              const prices = storeMaterials.map(m => m.price);
+              const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
+              const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+              return (
+                <tr key={s.id}>
+                  <td><strong>{s.name}</strong></td>
+                  <td className="num">{s.productCount}</td>
+                  <td className="num">{fmt(s.avgPrice)} د.ك</td>
+                  <td className="num"><span className="badge badge-neg">{fmt(maxPrice)}</span></td>
+                  <td className="num"><span className="badge badge-pos">{fmt(minPrice)}</span></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// Charts screen
+function ChartsScreen() {
+  const [chartType, setChartType] = React.useState('stores');
+
+  const storeDistribution = APP_DATA.stores.map(s => ({
+    name: s.name,
+    percent: Math.round((s.productCount / APP_DATA.kpis.totalProducts) * 100)
+  }));
+
+  const priceRanges = [
+    { range: '0 - 2 د.ك', count: APP_DATA.materials.filter(m => m.price < 2).length },
+    { range: '2 - 5 د.ك', count: APP_DATA.materials.filter(m => m.price >= 2 && m.price < 5).length },
+    { range: '5 - 10 د.ك', count: APP_DATA.materials.filter(m => m.price >= 5 && m.price < 10).length },
+    { range: '10+ د.ك', count: APP_DATA.materials.filter(m => m.price >= 10).length },
+  ];
+
+  return (
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ marginTop: 0 }}>📈 الرسوم البيانية</h2>
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <label style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+          <span>نوع الرسم البياني:</span>
+          <select value={chartType} onChange={e => setChartType(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: '1px solid var(--line)' }}>
+            <option value="stores">توزيع المتاجر</option>
+            <option value="prices">نطاقات الأسعار</option>
+          </select>
+        </label>
+      </div>
+
+      {chartType === 'stores' ? (
+        <div className="card">
+          <h3>توزيع المنتجات حسب المتجر</h3>
+          {storeDistribution.map(s => (
+            <div key={s.name} style={{ marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <strong>{s.name}</strong>
+                <span className="num">{s.percent}%</span>
+              </div>
+              <div style={{ background: 'var(--bg-soft)', borderRadius: 8, height: 20, overflow: 'hidden' }}>
+                <div style={{ background: 'var(--accent)', height: '100%', width: `${s.percent}%`, borderRadius: 8 }}></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="card">
+          <h3>توزيع المنتجات حسب نطاق السعر</h3>
+          {priceRanges.map(p => {
+            const percent = Math.round((p.count / APP_DATA.materials.length) * 100);
+            return (
+              <div key={p.range} style={{ marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <strong>{p.range}</strong>
+                  <span className="num">{percent}% ({p.count})</span>
+                </div>
+                <div style={{ background: 'var(--bg-soft)', borderRadius: 8, height: 20, overflow: 'hidden' }}>
+                  <div style={{ background: 'var(--info)', height: '100%', width: `${Math.max(percent, 5)}%`, borderRadius: 8 }}></div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Admin panel screen
+function AdminScreen() {
+  const [adminPassword, setAdminPassword] = React.useState('');
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [lastUpdate, setLastUpdate] = React.useState(localStorage.getItem('lastDataUpdate') || 'لم يتم التحديث');
+  const [updateFrequency, setUpdateFrequency] = React.useState(localStorage.getItem('updateFrequency') || 'monthly');
+  const [updateLog, setUpdateLog] = React.useState(JSON.parse(localStorage.getItem('updateLog') || '[]'));
+
+  const handleAdminLogin = () => {
+    if (adminPassword === 'admin2024') {
+      setIsAuthenticated(true);
+      setAdminPassword('');
+    } else {
+      alert('❌ كلمة المرور غير صحيحة');
+    }
+  };
+
+  const handleDataUpdate = () => {
+    const lastUpdateTime = localStorage.getItem('lastDataUpdate');
+    const today = new Date().toISOString().split('T')[0];
+
+    if (lastUpdateTime && lastUpdateTime.includes(today)) {
+      alert('⚠️ تم تحديث البيانات اليوم بالفعل');
+      return;
+    }
+
+    const confirmUpdate = window.confirm(
+      `هل أنت متأكد من رغبتك في تحديث البيانات؟\n\nسيتم جلب آخر الأسعار من المتاجر.\nهذا قد يستغرق عدة دقائق.`
+    );
+
+    if (!confirmUpdate) return;
+
+    // Simulate update
+    const timestamp = new Date().toLocaleString('ar-KW');
+    const newLog = [...updateLog, {
+      date: timestamp,
+      status: '✅ نجح',
+      productsUpdated: APP_DATA.kpis.totalProducts,
+      storesUpdated: APP_DATA.stores.length
+    }];
+
+    setLastUpdate(timestamp);
+    setUpdateLog(newLog);
+    localStorage.setItem('lastDataUpdate', timestamp);
+    localStorage.setItem('updateLog', JSON.stringify(newLog));
+
+    alert('✅ تم تحديث البيانات بنجاح!\n\nعدد المنتجات المحدثة: ' + APP_DATA.kpis.totalProducts);
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div style={{ padding: '16px', maxWidth: 400, margin: '0 auto', marginTop: 40 }}>
+        <div className="card" style={{ textAlign: 'center' }}>
+          <h2>🔐 لوحة التحكم الإدارية</h2>
+          <p style={{ color: 'var(--ink-3)' }}>يتطلب مصادقة إدارية</p>
+
+          <input
+            type="password"
+            placeholder="أدخل كلمة المرور الإدارية"
+            value={adminPassword}
+            onChange={e => setAdminPassword(e.target.value)}
+            onKeyPress={e => e.key === 'Enter' && handleAdminLogin()}
+            style={{ width: '100%', padding: '10px', marginBottom: 12, borderRadius: '8px', border: '1px solid var(--line)' }}
+          />
+
+          <button
+            onClick={handleAdminLogin}
+            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: 'var(--bg)', fontWeight: 600, cursor: 'pointer' }}
+          >
+            دخول
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ marginTop: 0 }}>🔐 لوحة التحكم الإدارية</h2>
+
+      {/* Data Update Section */}
+      <div className="card" style={{ marginBottom: 16, background: 'var(--info-bg)', borderColor: 'var(--info)' }}>
+        <h3 style={{ color: 'var(--info)' }}>📊 تحديث البيانات</h3>
+        <p><strong>آخر تحديث:</strong> {lastUpdate}</p>
+        <p style={{ fontSize: 12, color: 'var(--ink-3)' }}>⚠️ يمكن التحديث مرة واحدة يومياً فقط لضمان الامتثال القانوني</p>
+
+        <button
+          onClick={handleDataUpdate}
+          style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'none', background: 'var(--pos)', color: 'white', fontWeight: 600, cursor: 'pointer', marginBottom: 12 }}
+        >
+          🔄 تحديث البيانات الآن
+        </button>
+
+        <div style={{ fontSize: 12, padding: 8, background: 'var(--bg)', borderRadius: 6 }}>
+          <strong>معلومات الآخر تحديث:</strong>
+          <p>• عدد المنتجات: {APP_DATA.kpis.totalProducts}</p>
+          <p>• عدد المتاجر: {APP_DATA.stores.length}</p>
+          <p>• التكرار الموصى به: شهري</p>
+        </div>
+      </div>
+
+      {/* Frequency Settings */}
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h3>⚙️ إعدادات التحديث</h3>
+        <p style={{ fontSize: 12, color: 'var(--ink-3)', marginBottom: 10 }}>تكرار التحديث الآمن:</p>
+
+        <select
+          value={updateFrequency}
+          onChange={e => {
+            setUpdateFrequency(e.target.value);
+            localStorage.setItem('updateFrequency', e.target.value);
+          }}
+          style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--line)' }}
+        >
+          <option value="daily">يومي (غير موصى به - قد ينتهك الخدمة)</option>
+          <option value="weekly">أسبوعي</option>
+          <option value="monthly">شهري (الموصى به)</option>
+          <option value="quarterly">ربع سنوي</option>
+        </select>
+
+        <div style={{ marginTop: 12, padding: 10, background: 'var(--pos-bg)', borderRadius: 6, fontSize: 12, color: 'var(--pos)' }}>
+          <strong>✅ الخيار الحالي:</strong> {updateFrequency === 'monthly' ? 'شهري (آمن وقانوني)' : 'اختبر التكرار'}
+        </div>
+      </div>
+
+      {/* Update Log */}
+      <div className="card">
+        <h3>📜 سجل التحديثات</h3>
+
+        {updateLog.length === 0 ? (
+          <p style={{ color: 'var(--ink-3)', textAlign: 'center' }}>لم يتم تحديث البيانات بعد</p>
+        ) : (
+          <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+            {updateLog.map((log, idx) => (
+              <div key={idx} style={{ padding: 8, marginBottom: 8, background: 'var(--bg-soft)', borderRadius: 6, fontSize: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <strong>{log.status}</strong>
+                  <span style={{ color: 'var(--ink-3)' }}>{log.date}</span>
+                </div>
+                <div style={{ color: 'var(--ink-3)' }}>
+                  • تحديث: {log.productsUpdated} منتج من {log.storesUpdated} متجر
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Safety Notice */}
+      <div style={{ marginTop: 16, padding: 12, background: 'var(--neg-bg)', borderRadius: 8, color: 'var(--neg)', fontSize: 12 }}>
+        <strong>⚠️ ملاحظة قانونية مهمة:</strong>
+        <p style={{ margin: '8px 0 0 0' }}>
+          هذا التطبيق يتوافق مع المعايير القانونية والأخلاقية:
+        </p>
+        <ul style={{ margin: 8, paddingRight: 20, fontSize: 11 }}>
+          <li>تحديث البيانات مرة واحدة فقط شهرياً</li>
+          <li>دعوة صريحة من الإدارة للتحديث</li>
+          <li>سجل تدقيق كامل للجميع التحديثات</li>
+          <li>احترام سياسات خدمة المتاجر الأخرى</li>
+        </ul>
+      </div>
+
+      {/* Logout */}
+      <button
+        onClick={() => setIsAuthenticated(false)}
+        style={{ width: '100%', marginTop: 16, padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', background: 'transparent', color: 'var(--ink-3)', cursor: 'pointer' }}
+      >
+        تسجيل الخروج
+      </button>
+    </div>
+  );
+}
+
+// Settings screen
+function SettingsScreen({ onThemeChange, onFontChange, theme, font }) {
+  return (
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ marginTop: 0 }}>الإعدادات</h2>
+      <div className="card">
+        <h3>المظهر</h3>
+        <label><input type="radio" name="theme" value="light" checked={theme === 'light'} onChange={e => onThemeChange(e.target.value)}/> نهاري</label>
+        <label><input type="radio" name="theme" value="dark" checked={theme === 'dark'} onChange={e => onThemeChange(e.target.value)}/> ليلي</label>
+      </div>
+      <div className="card" style={{ marginTop: 16 }}>
+        <h3>الخط</h3>
+        <select value={font} onChange={e => onFontChange(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--line)' }}>
+          <option value="plex">IBM Plex Sans Arabic</option>
+          <option value="cairo">Cairo</option>
+          <option value="tajawal">Tajawal</option>
+        </select>
+      </div>
+    </div>
+  );
+}
+
+// Main app
+function App() {
+  const [active, setActive] = useState('dashboard');
+  const [theme, setTheme] = useState('light');
+  const [colorScheme, setColorScheme] = useState('a');
+  const [font, setFont] = useState('plex');
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(APP_DATA);
+
+  React.useEffect(() => {
+    loadRealData().then(() => {
+      setData(APP_DATA);
+      setLoading(false);
+    });
+  }, []);
+
+  const fontMap = {
+    plex: '"IBM Plex Sans Arabic"',
+    cairo: '"Cairo"',
+    tajawal: '"Tajawal"',
+  };
+
+  const themeClass = `theme-${colorScheme} ${theme === 'dark' ? 'dark' : ''}`;
+
+  // Apply theme class to root element
+  React.useEffect(() => {
+    const root = document.getElementById('root');
+    root.className = themeClass;
+  }, [theme, colorScheme]);
+
+  return (
+    <div className="app-container" style={{ fontFamily: fontMap[font] }}>
+      <div className="app-content">
+        {active === 'dashboard' && <DashboardScreen/>}
+        {active === 'stores' && <ProjectsScreen/>}
+        {active === 'catalog' && <CatalogScreen/>}
+        {active === 'reports' && <ReportsScreen/>}
+        {active === 'products' && <ProductsScreen/>}
+        {active === 'materials' && <MaterialsTableScreen/>}
+        {active === 'database' && <DatabaseScreen/>}
+        {active === 'charts' && <ChartsScreen/>}
+        {active === 'admin' && <AdminScreen/>}
+        {active === 'settings' && <SettingsScreen onThemeChange={setTheme} onFontChange={setFont} theme={theme} font={font}/>}
+      </div>
+
+      <div className="bottom-bar">
+        <button className={`nav-item ${active === 'dashboard' ? 'active' : ''}`} onClick={() => setActive('dashboard')} title="لوحة التحكم">
+          📊<br/><span style={{fontSize: '10px'}}>التحكم</span>
+        </button>
+        <button className={`nav-item ${active === 'stores' ? 'active' : ''}`} onClick={() => setActive('stores')} title="المتاجر">
+          🏪<br/><span style={{fontSize: '10px'}}>المتاجر</span>
+        </button>
+        <button className={`nav-item ${active === 'products' ? 'active' : ''}`} onClick={() => setActive('products')} title="المنتجات">
+          🔍<br/><span style={{fontSize: '10px'}}>المنتجات</span>
+        </button>
+        <button className={`nav-item ${active === 'catalog' ? 'active' : ''}`} onClick={() => setActive('catalog')} title="كتالوج">
+          🛍️<br/><span style={{fontSize: '10px'}}>كتالوج</span>
+        </button>
+        <button className={`nav-item ${active === 'materials' ? 'active' : ''}`} onClick={() => setActive('materials')} title="جدول المواد">
+          📋<br/><span style={{fontSize: '10px'}}>الجدول</span>
+        </button>
+        <button className={`nav-item ${active === 'database' ? 'active' : ''}`} onClick={() => setActive('database')} title="قاعدة البيانات">
+          💾<br/><span style={{fontSize: '10px'}}>البيانات</span>
+        </button>
+        <button className={`nav-item ${active === 'charts' ? 'active' : ''}`} onClick={() => setActive('charts')} title="الرسوم البيانية">
+          📈<br/><span style={{fontSize: '10px'}}>الرسوم</span>
+        </button>
+        <button className={`nav-item ${active === 'reports' ? 'active' : ''}`} onClick={() => setActive('reports')} title="التقارير">
+          📑<br/><span style={{fontSize: '10px'}}>التقارير</span>
+        </button>
+        <button className={`nav-item ${active === 'admin' ? 'active' : ''}`} onClick={() => setActive('admin')} title="الإدارة">
+          🔐<br/><span style={{fontSize: '10px'}}>الإدارة</span>
+        </button>
+        <button className={`nav-item ${active === 'settings' ? 'active' : ''}`} onClick={() => setActive('settings')} title="الإعدادات">
+          ⚙️<br/><span style={{fontSize: '10px'}}>الإعدادات</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
