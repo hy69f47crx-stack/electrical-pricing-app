@@ -214,6 +214,8 @@ body{font-family:"IBM Plex Sans Arabic","Tajawal",system-ui,sans-serif;backgroun
   overflow-y:auto;
   overflow-x:hidden;
   min-height: 0;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 .bottom-bar{
@@ -229,8 +231,10 @@ body{font-family:"IBM Plex Sans Arabic","Tajawal",system-ui,sans-serif;backgroun
   grid-template-columns:repeat(auto-fit, minmax(90px, 1fr));
   gap:4px;
   overflow-x:auto;
+  overflow-y:hidden;
   z-index:998;
   flex-shrink:0;
+  margin:0;
 }
 
 .nav-item{
@@ -388,7 +392,7 @@ button{
 @media (min-width:769px){
   #mobile-app { display: none !important; }
   #root { display: flex !important; }
-  .app-content { padding-bottom: 75px; }
+  .app-content { padding-bottom: 0 !important; }
 }
 
 /* ===== MOBILE APP STYLING (min-width: 0) ===== */
@@ -398,6 +402,8 @@ button{
   width: 100vw;
   height: 100vh;
   background: var(--bg);
+  padding: 0 !important;
+  margin: 0 !important;
   color: var(--ink);
   font-family: "IBM Plex Sans Arabic","Tajawal",system-ui,sans-serif;
   overflow: hidden;
@@ -422,8 +428,7 @@ button{
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 12px;
-  padding-bottom: 85px;
+  padding: 12px 12px 0 12px;
   position: relative;
 }
 
