@@ -23,9 +23,31 @@ hide_streamlit_style = """
     [data-testid="stStatusWidget"] {display: none !important;}
     .stStatusWidget {display: none !important;}
 
-    /* Hide manage app button specifically */
+    /* Hide manage app button and code button specifically */
     button[kind="secondary"]:last-of-type {display: none !important;}
     [data-testid="toolbarButtonContainer"] {display: none !important;}
+    [data-testid="stToolbarButton"] {display: none !important;}
+    button[aria-label*="code"] {display: none !important;}
+    button[title*="code"] {display: none !important;}
+
+    /* Hide Streamlit's code viewer and code button */
+    div[data-testid="stCode"] {display: none !important;}
+    .streamlit-code-viewer {display: none !important;}
+    .streamlit-container code {display: none !important;}
+
+    /* Hide code/source button from Streamlit */
+    button[aria-label="Code"] {display: none !important;}
+    button[title="Code"] {display: none !important;}
+    a[href*="code"] {display: none !important;}
+
+    /* Hide any element with 'code' text */
+    button:nth-child(n) {
+        visibility: visible !important;
+    }
+
+    /* Specifically target and hide the code snippet viewer */
+    .streamlit-expanderContent {display: none !important;}
+    [role="dialog"] {display: none !important;}
 
     /* Hide any element with text 'manage' or 'Manage' */
     button[title*="anage"], button[aria-label*="anage"] {display: none !important;}
@@ -61,13 +83,36 @@ hide_streamlit_style = """
         margin: 0 !important;
     }
 
+    /* Universal bottom-right element hiding */
+    *[style*="bottom:"] {display: none !important;}
+    *[style*="right:"] {display: none !important;}
+    *[style*="bottom"] {display: none !important;}
+    *[style*="right"] {display: none !important;}
+
     /* Hide any fixed/absolute positioned elements at bottom-right */
     [style*="bottom"], [style*="right"] {
+        display: none !important !important;
+        visibility: hidden !important;
         z-index: 0 !important;
+    }
+
+    /* Aggressive hiding of all bottom-right positioned elements */
+    div[style*="position"], div[style*="bottom"], div[style*="right"],
+    button[style*="bottom"], button[style*="right"] {
+        display: none !important;
     }
 
     /* Hide any tooltip or popup at bottom-right */
     .stToast, .stNotification {display: none !important;}
+
+    /* Hide Streamlit sidebar and controls */
+    .stSidebar {display: none !important;}
+    .stAppViewContainer {overflow: hidden !important;}
+
+    /* Hide watermark and branding */
+    .css-5rimss {display: none !important;}
+    .ef3psqc11 {display: none !important;}
+    .viewerBadge {display: none !important;}
 </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
@@ -80,3 +125,34 @@ try:
 except FileNotFoundError:
     st.error("❌ Error: pricing-app.html file not found!")
     st.info("Make sure pricing-app.html is in the same directory as app.py")
+
+# Add JavaScript to hide any code buttons or panels
+st.markdown("""
+<script>
+// Remove code button and any code-related UI from Streamlit
+document.addEventListener('DOMContentLoaded', function() {
+    // Hide any button with code-related text or attributes
+    document.querySelectorAll('button').forEach(btn => {
+        if (btn.textContent.toLowerCase().includes('code') ||
+            btn.getAttribute('aria-label')?.toLowerCase().includes('code') ||
+            btn.getAttribute('title')?.toLowerCase().includes('code')) {
+            btn.style.display = 'none';
+        }
+    });
+
+    // Hide code dialogs/modals
+    document.querySelectorAll('[role="dialog"]').forEach(dialog => {
+        dialog.style.display = 'none';
+    });
+});
+
+// Also check periodically for any dynamically added elements
+setInterval(() => {
+    document.querySelectorAll('button').forEach(btn => {
+        if (btn.textContent.toLowerCase().includes('code')) {
+            btn.style.display = 'none';
+        }
+    });
+}, 500);
+</script>
+""", unsafe_allow_html=True)
