@@ -13,9 +13,22 @@ st.set_page_config(
 hide_streamlit_style = """
 <style>
     /* Hide Streamlit elements */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+    #MainMenu {visibility: hidden; display: none !important;}
+    footer {visibility: hidden; display: none !important;}
+    header {visibility: hidden; display: none !important;}
+
+    /* Hide all Streamlit toolbars and controls */
+    [data-testid="stToolbar"] {display: none !important;}
+    [data-testid="stDecoration"] {display: none !important;}
+    [data-testid="stStatusWidget"] {display: none !important;}
+    .stStatusWidget {display: none !important;}
+
+    /* Hide manage app button specifically */
+    button[kind="secondary"]:last-of-type {display: none !important;}
+    [data-testid="toolbarButtonContainer"] {display: none !important;}
+
+    /* Hide any element with text 'manage' or 'Manage' */
+    button[title*="anage"], button[aria-label*="anage"] {display: none !important;}
 
     /* Remove Streamlit padding and margins */
     .stMain {
@@ -47,6 +60,14 @@ hide_streamlit_style = """
         padding: 0 !important;
         margin: 0 !important;
     }
+
+    /* Hide any fixed/absolute positioned elements at bottom-right */
+    [style*="bottom"], [style*="right"] {
+        z-index: 0 !important;
+    }
+
+    /* Hide any tooltip or popup at bottom-right */
+    .stToast, .stNotification {display: none !important;}
 </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
