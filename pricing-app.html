@@ -809,41 +809,262 @@ function DashboardScreen() {
   );
 }
 
-// Projects screen
-function ProjectsScreen() {
-  if (APP_DATA.loading) {
-    return <div style={{ padding: '16px', textAlign: 'center', color: 'var(--ink-3)' }}>جاري تحميل البيانات...</div>;
+// ── Work Pricing items catalogue (from electrical_pricing_system.py) ─────────
+const WORK_ITEMS = [
+  // كابلات
+  {id:'cable_001', name:'كابل نحاس 2.5 ملم²',          unit:'متر',   cat:'كابلات', sm:0.80,  md:0.75,  lg:0.70,  rf:1.0,cf:1.10,idf:1.30,nf:1.40},
+  {id:'cable_002', name:'كابل نحاس 4 ملم²',            unit:'متر',   cat:'كابلات', sm:1.20,  md:1.10,  lg:1.00,  rf:1.0,cf:1.15,idf:1.40,nf:1.50},
+  {id:'cable_003', name:'كابل نحاس 6 ملم²',            unit:'متر',   cat:'كابلات', sm:1.80,  md:1.60,  lg:1.40,  rf:1.0,cf:1.20,idf:1.50,nf:1.60},
+  {id:'cable_004', name:'كابل ألياف بصرية',             unit:'متر',   cat:'كابلات', sm:3.50,  md:3.00,  lg:2.50,  rf:1.0,cf:1.30,idf:1.60,nf:2.00},
+  // توزيع
+  {id:'breaker_001',name:'قاطع كهرباء C20',             unit:'قطعة',  cat:'توزيع',  sm:4.50,  md:4.00,  lg:3.50,  rf:1.0,cf:1.10,idf:1.30,nf:1.40},
+  {id:'breaker_002',name:'قاطع ثلاثي الطور 63A',        unit:'قطعة',  cat:'توزيع',  sm:25.00, md:22.00, lg:20.00, rf:1.0,cf:1.15,idf:1.40,nf:1.50},
+  {id:'panel_001',  name:'لوحة توزيع رئيسية MCCB',      unit:'لوحة',  cat:'توزيع',  sm:150.0, md:130.0, lg:110.0, rf:1.0,cf:1.20,idf:1.50,nf:1.80},
+  {id:'panel_002',  name:'لوحة توزيع فرعية',            unit:'لوحة',  cat:'توزيع',  sm:80.00, md:70.00, lg:60.00, rf:1.0,cf:1.15,idf:1.40,nf:1.60},
+  // إضاءة
+  {id:'light_001',  name:'مصباح LED 15W',               unit:'قطعة',  cat:'إضاءة',  sm:8.00,  md:7.00,  lg:6.00,  rf:1.0,cf:1.10,idf:1.30,nf:1.40},
+  {id:'light_002',  name:'مصباح LED 25W',               unit:'قطعة',  cat:'إضاءة',  sm:12.00, md:10.50, lg:9.00,  rf:1.0,cf:1.15,idf:1.35,nf:1.50},
+  {id:'light_003',  name:'إضاءة طوارئ LED 8W',          unit:'قطعة',  cat:'إضاءة',  sm:25.00, md:22.00, lg:20.00, rf:1.0,cf:1.20,idf:1.40,nf:1.60},
+  {id:'fixture_001',name:'حامل إضاءة سقفي',             unit:'قطعة',  cat:'إضاءة',  sm:15.00, md:13.00, lg:11.00, rf:1.0,cf:1.10,idf:1.25,nf:1.40},
+  // مقابس
+  {id:'socket_001', name:'مقبس كهرباء عادي 13A',        unit:'قطعة',  cat:'مقابس',  sm:3.00,  md:2.70,  lg:2.40,  rf:1.0,cf:1.10,idf:1.20,nf:1.30},
+  {id:'socket_002', name:'مقبس مزدوج 13A',              unit:'قطعة',  cat:'مقابس',  sm:5.50,  md:5.00,  lg:4.50,  rf:1.0,cf:1.15,idf:1.30,nf:1.40},
+  {id:'socket_003', name:'مقبس ثلاثي الطور 32A',        unit:'قطعة',  cat:'مقابس',  sm:45.00, md:40.00, lg:35.00, rf:1.0,cf:1.20,idf:1.40,nf:1.50},
+  // مفاتيح
+  {id:'switch_001', name:'مفتاح كهرباء عادي',           unit:'قطعة',  cat:'مفاتيح', sm:2.00,  md:1.80,  lg:1.60,  rf:1.0,cf:1.10,idf:1.20,nf:1.30},
+  {id:'switch_002', name:'مفتاح ثنائي 2-Way',           unit:'قطعة',  cat:'مفاتيح', sm:3.50,  md:3.20,  lg:2.90,  rf:1.0,cf:1.15,idf:1.30,nf:1.40},
+  // تحكم وحماية
+  {id:'control_001',name:'عداد كهرباء ذكي',             unit:'قطعة',  cat:'تحكم',   sm:35.00, md:30.00, lg:25.00, rf:1.0,cf:1.20,idf:1.40,nf:1.60},
+  {id:'control_002',name:'جهاز حماية RCD 30mA',         unit:'قطعة',  cat:'حماية',  sm:18.00, md:16.00, lg:14.00, rf:1.0,cf:1.10,idf:1.30,nf:1.40},
+  {id:'control_003',name:'منظم جهد كهربائي',            unit:'قطعة',  cat:'حماية',  sm:65.00, md:58.00, lg:50.00, rf:1.0,cf:1.25,idf:1.50,nf:1.70},
+  // ملحقات
+  {id:'install_001',name:'صندوق توصيل كهربائي',         unit:'قطعة',  cat:'ملحقات', sm:1.50,  md:1.30,  lg:1.10,  rf:1.0,cf:1.10,idf:1.25,nf:1.35},
+  {id:'install_002',name:'أنابيب Conduit 20mm',          unit:'متر',   cat:'ملحقات', sm:0.95,  md:0.85,  lg:0.75,  rf:1.0,cf:1.10,idf:1.25,nf:1.40},
+  {id:'install_003',name:'نقطة تأريض',                  unit:'نقطة',  cat:'حماية',  sm:12.00, md:10.50, lg:9.00,  rf:1.0,cf:1.15,idf:1.40,nf:1.60},
+  // أنظمة خاصة
+  {id:'special_001',name:'نظام إطفاء حريق كهربائي',     unit:'نظام',  cat:'أمان',   sm:500.0, md:450.0, lg:400.0, rf:1.1,cf:1.30,idf:1.60,nf:1.80},
+  {id:'special_002',name:'لوح طاقة شمسية 400W',         unit:'لوح',   cat:'طاقة',   sm:280.0, md:250.0, lg:220.0, rf:1.0,cf:1.15,idf:1.35,nf:1.50},
+  {id:'special_003',name:'بطارية احتياطية UPS 5KVA',    unit:'قطعة',  cat:'طاقة',   sm:850.0, md:750.0, lg:650.0, rf:1.0,cf:1.25,idf:1.50,nf:1.70},
+];
+const WORK_CATS = ['الكل', ...Array.from(new Set(WORK_ITEMS.map(i => i.cat)))];
+
+// ── Work Pricing Screen ────────────────────────────────────────────────────────
+function WorkPricingScreen() {
+  const [size,      setSize]      = React.useState('medium');
+  const [ptype,     setPtype]     = React.useState('residential');
+  const [qlvl,      setQlvl]      = React.useState('standard');
+  const [filterCat, setFilterCat] = React.useState('الكل');
+  const [selId,     setSelId]     = React.useState('');
+  const [qty,       setQty]       = React.useState('1');
+  const [cart,      setCart]      = React.useState([]);
+
+  const QF  = {economy:0.8, standard:1.0, premium:1.3};
+
+  function bp(item)   { return size==='small'?item.sm:size==='medium'?item.md:item.lg; }
+  function tf(item)   { return ptype==='residential'?item.rf:ptype==='commercial'?item.cf:ptype==='industrial'?item.idf:item.nf; }
+  function upr(item)  { return Math.round(bp(item)*tf(item)*(QF[qlvl]||1)*100)/100; }
+  function ltot(c)    { const it=WORK_ITEMS.find(i=>i.id===c.id); return it?Math.round(upr(it)*c.qty*100)/100:0; }
+
+  function addItem() {
+    if (!selId) return;
+    const q = parseFloat(qty)||1;
+    const ex = cart.find(c=>c.id===selId);
+    if (ex) setCart(cart.map(c=>c.id===selId?{...c,qty:c.qty+q}:c));
+    else    setCart([...cart,{id:selId,qty:q}]);
+    setQty('1');
+  }
+  function remItem(id)       { setCart(cart.filter(c=>c.id!==id)); }
+  function updQty(id,v)      { setCart(cart.map(c=>c.id===id?{...c,qty:parseFloat(v)||1}:c)); }
+
+  const filtered  = filterCat==='الكل' ? WORK_ITEMS : WORK_ITEMS.filter(i=>i.cat===filterCat);
+  const subtotal  = Math.round(cart.reduce((s,c)=>s+ltot(c),0)*100)/100;
+  const tax5      = Math.round(subtotal*0.05*100)/100;
+  const grandTot  = Math.round((subtotal+tax5)*100)/100;
+
+  const sizeLabel  = {small:'صغير (<500م²)',medium:'متوسط (500-2000م²)',large:'كبير (>2000م²)'};
+  const typeLabel  = {residential:'سكني',commercial:'تجاري',industrial:'صناعي',infrastructure:'بنية تحتية'};
+  const qlvlLabel  = {economy:'اقتصادي ×0.8',standard:'قياسي ×1.0',premium:'ممتاز ×1.3'};
+
+  const inp  = {width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid var(--line)',background:'var(--bg)',color:'var(--ink)',fontSize:13,fontFamily:'inherit',boxSizing:'border-box'};
+  const chip = (active,lbl,fn) => (
+    <button onClick={fn} style={{padding:'4px 10px',borderRadius:20,fontSize:11,border:'none',cursor:'pointer',fontFamily:'inherit',
+      background:active?'var(--accent)':'var(--bg-soft)',color:active?'var(--bg)':'var(--ink-3)',fontWeight:active?700:400}}>{lbl}</button>
+  );
+
+  function copyReport() {
+    const lines = [
+      '═══════════════════════════════════════════',
+      '   جدول تسعير الأعمال الكهربائية',
+      '═══════════════════════════════════════════',
+      'الحجم: '+sizeLabel[size]+'   النوع: '+typeLabel[ptype]+'   الجودة: '+qlvlLabel[qlvl],
+      '───────────────────────────────────────────',
+      '#  البند                         الوحدة   الكمية   سعر/وحدة   الإجمالي',
+      '───────────────────────────────────────────',
+      ...cart.map((c,i)=>{
+        const it=WORK_ITEMS.find(x=>x.id===c.id);
+        if(!it)return '';
+        const up=upr(it),lt=ltot(c);
+        return (i+1)+'. '+it.name.padEnd(28)+it.unit.padEnd(8)+String(c.qty).padEnd(8)+String(up).padEnd(12)+lt+' د.ك';
+      }),
+      '───────────────────────────────────────────',
+      'الإجمالي الجزئي:   '+subtotal+' د.ك',
+      'ضريبة 5%:          '+tax5+' د.ك',
+      'المجموع النهائي:   '+grandTot+' د.ك',
+      '═══════════════════════════════════════════',
+      'التاريخ: '+new Date().toLocaleDateString('ar-KW'),
+    ].join('\n');
+    if(navigator.clipboard) navigator.clipboard.writeText(lines).then(()=>alert('✅ تم نسخ الجدول!'));
   }
 
   return (
-    <div style={{ padding: '16px' }}>
-      <h2 style={{ marginTop: 0 }}>المتاجر والمخازن</h2>
-      {APP_DATA.stores.length === 0 ? (
-        <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ink-3)' }}>
-          لا توجد متاجر متاحة حالياً
+    <div style={{padding:16}}>
+      <h2 style={{marginTop:0}}>⚡ نسبة الأعمال الكهربائية</h2>
+
+      {/* ── Project settings ── */}
+      <div className="card" style={{marginBottom:14}}>
+        <h3 style={{marginTop:0,marginBottom:12,fontSize:14}}>⚙️ إعدادات المشروع</h3>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
+          <div>
+            <div style={{fontSize:11,color:'var(--ink-3)',marginBottom:6}}>حجم المشروع</div>
+            <div style={{display:'flex',flexDirection:'column',gap:4}}>
+              {['small','medium','large'].map(s=>(
+                <label key={s} style={{display:'flex',alignItems:'center',gap:6,fontSize:12,cursor:'pointer'}}>
+                  <input type="radio" name="sz" value={s} checked={size===s} onChange={()=>setSize(s)}/>
+                  {sizeLabel[s]}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div style={{fontSize:11,color:'var(--ink-3)',marginBottom:6}}>نوع المشروع</div>
+            <div style={{display:'flex',flexDirection:'column',gap:4}}>
+              {['residential','commercial','industrial','infrastructure'].map(t=>(
+                <label key={t} style={{display:'flex',alignItems:'center',gap:6,fontSize:12,cursor:'pointer'}}>
+                  <input type="radio" name="pt" value={t} checked={ptype===t} onChange={()=>setPtype(t)}/>
+                  {typeLabel[t]}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div style={{fontSize:11,color:'var(--ink-3)',marginBottom:6}}>مستوى الجودة</div>
+            <div style={{display:'flex',flexDirection:'column',gap:4}}>
+              {['economy','standard','premium'].map(q=>(
+                <label key={q} style={{display:'flex',alignItems:'center',gap:6,fontSize:12,cursor:'pointer'}}>
+                  <input type="radio" name="ql" value={q} checked={qlvl===q} onChange={()=>setQlvl(q)}/>
+                  {qlvlLabel[q]}
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Add items ── */}
+      <div className="card" style={{marginBottom:14}}>
+        <h3 style={{marginTop:0,marginBottom:10,fontSize:14}}>➕ إضافة بند</h3>
+        {/* category chips */}
+        <div style={{display:'flex',gap:4,flexWrap:'wrap',marginBottom:10}}>
+          {WORK_CATS.map(c=>chip(filterCat===c,c,()=>{setFilterCat(c);setSelId('');}))}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr auto auto',gap:8,alignItems:'end'}}>
+          <div>
+            <div style={{fontSize:11,color:'var(--ink-3)',marginBottom:4}}>البند</div>
+            <select style={inp} value={selId} onChange={e=>setSelId(e.target.value)}>
+              <option value="">اختر البند...</option>
+              {filtered.map(i=>(
+                <option key={i.id} value={i.id}>{i.name} — {i.unit} | {upr(i)} د.ك</option>
+              ))}
+            </select>
+          </div>
+          <div style={{width:72}}>
+            <div style={{fontSize:11,color:'var(--ink-3)',marginBottom:4}}>الكمية</div>
+            <input style={inp} type="number" min="0.1" step="0.5" value={qty} onChange={e=>setQty(e.target.value)}/>
+          </div>
+          <button onClick={addItem} style={{padding:'8px 14px',borderRadius:8,border:'none',background:'var(--accent)',color:'var(--bg)',fontWeight:700,cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}}>+ إضافة</button>
+        </div>
+        {selId && (()=>{
+          const it=WORK_ITEMS.find(i=>i.id===selId);
+          return it ? (
+            <div style={{marginTop:8,padding:8,background:'var(--info-bg)',borderRadius:6,fontSize:11,color:'var(--ink-3)',display:'flex',gap:16,flexWrap:'wrap'}}>
+              <span>📦 الفئة: <strong>{it.cat}</strong></span>
+              <span>💰 سعر الوحدة: <strong style={{color:'var(--accent)'}}>{upr(it)} د.ك/{it.unit}</strong></span>
+              <span>🔢 الكمية × السعر: <strong style={{color:'var(--pos)'}}>{Math.round(upr(it)*(parseFloat(qty)||1)*100)/100} د.ك</strong></span>
+            </div>
+          ) : null;
+        })()}
+      </div>
+
+      {/* ── Quotation table ── */}
+      {cart.length > 0 ? (
+        <div className="card" style={{marginBottom:14}}>
+          <h3 style={{marginTop:0,marginBottom:10,fontSize:14}}>📋 جدول الكميات والأسعار</h3>
+          <div style={{overflowX:'auto'}}>
+            <table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
+              <thead>
+                <tr style={{background:'var(--accent)',color:'var(--bg)'}}>
+                  <th style={{padding:'7px 10px',textAlign:'right'}}>#</th>
+                  <th style={{padding:'7px 10px',textAlign:'right'}}>البند</th>
+                  <th style={{padding:'7px 10px',textAlign:'right'}}>الفئة</th>
+                  <th style={{padding:'7px 10px',textAlign:'right'}}>الوحدة</th>
+                  <th style={{padding:'7px 10px',textAlign:'right'}}>الكمية</th>
+                  <th style={{padding:'7px 10px',textAlign:'right'}}>سعر/وحدة</th>
+                  <th style={{padding:'7px 10px',textAlign:'right'}}>الإجمالي</th>
+                  <th style={{padding:'7px 4px'}}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {cart.map((c,i)=>{
+                  const it=WORK_ITEMS.find(x=>x.id===c.id);
+                  if(!it)return null;
+                  return (
+                    <tr key={c.id} style={{background:i%2===0?'transparent':'var(--bg-soft)',borderBottom:'1px solid var(--line)'}}>
+                      <td style={{padding:'6px 10px',color:'var(--ink-3)'}}>{i+1}</td>
+                      <td style={{padding:'6px 10px',fontWeight:600}}>{it.name}</td>
+                      <td style={{padding:'6px 10px'}}><span style={{fontSize:10,padding:'2px 6px',borderRadius:10,background:'var(--accent-soft)',color:'var(--ink-3)'}}>{it.cat}</span></td>
+                      <td style={{padding:'6px 10px',color:'var(--ink-3)'}}>{it.unit}</td>
+                      <td style={{padding:'6px 10px'}}>
+                        <input type="number" min="0.1" step="1" value={c.qty}
+                          onChange={e=>updQty(c.id,e.target.value)}
+                          style={{width:56,padding:'3px 6px',borderRadius:6,border:'1px solid var(--line)',background:'var(--bg)',color:'var(--ink)',fontFamily:'inherit',fontSize:12}}/>
+                      </td>
+                      <td style={{padding:'6px 10px',color:'var(--ink-2)',fontWeight:600}}>{upr(it)} د.ك</td>
+                      <td style={{padding:'6px 10px',fontWeight:700,color:'var(--pos)'}}>{ltot(c)} د.ك</td>
+                      <td style={{padding:'6px 4px'}}>
+                        <button onClick={()=>remItem(c.id)} style={{background:'var(--neg-bg)',color:'var(--neg)',border:'none',borderRadius:6,padding:'2px 7px',cursor:'pointer',fontSize:11,fontFamily:'inherit'}}>✕</button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Totals */}
+          <div style={{marginTop:12,borderTop:'2px solid var(--line)',paddingTop:10}}>
+            {[
+              ['الإجمالي الجزئي', subtotal, 'var(--ink-2)'],
+              ['ضريبة 5%',        tax5,     'var(--warn)'],
+            ].map(([l,v,c])=>(
+              <div key={l} style={{display:'flex',justifyContent:'space-between',padding:'4px 0',fontSize:13}}>
+                <span style={{color:'var(--ink-3)'}}>{l}</span>
+                <span style={{color:c,fontWeight:600}}>{fmt(v)} د.ك</span>
+              </div>
+            ))}
+            <div style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderTop:'1px solid var(--line)',fontWeight:800,fontSize:16}}>
+              <span>المجموع النهائي</span>
+              <span style={{color:'var(--pos)'}}>{fmt(grandTot)} د.ك</span>
+            </div>
+          </div>
+
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:8}}>
+            <button onClick={()=>setCart([])} style={{padding:'8px',borderRadius:8,border:'1px solid var(--line)',background:'transparent',color:'var(--neg)',cursor:'pointer',fontFamily:'inherit',fontSize:12}}>🗑 مسح الكل</button>
+            <button onClick={copyReport} style={{padding:'8px',borderRadius:8,border:'none',background:'var(--accent)',color:'var(--bg)',fontWeight:600,cursor:'pointer',fontFamily:'inherit',fontSize:12}}>📋 نسخ الجدول</button>
+          </div>
         </div>
       ) : (
-        <div className="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>اسم المتجر</th>
-                <th>عدد المنتجات</th>
-                <th>متوسط السعر</th>
-                <th>الحالة</th>
-              </tr>
-            </thead>
-            <tbody>
-              {APP_DATA.stores.map(s => (
-                <tr key={s.id}>
-                  <td><strong>{s.name}</strong></td>
-                  <td className="num">{s.productCount}</td>
-                  <td className="num">{fmt(s.avgPrice)} د.ك</td>
-                  <td><span className={`badge badge-${s.productCount > 50 ? 'pos' : s.productCount > 20 ? 'info' : 'warn'}`}>نشط</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div style={{textAlign:'center',padding:'32px 16px',color:'var(--ink-4)',fontSize:13}}>
+          أضف بنوداً من الأعلى لبدء جدول التسعير
         </div>
       )}
     </div>
@@ -1469,6 +1690,340 @@ function SettingsScreen({ onThemeChange, onFontChange, theme, font, onGoAdmin })
   );
 }
 
+// ── Penalty Calculator Screen ────────────────────────────────────────────────
+function CalculatorScreen() {
+  const [tab, setTab]           = React.useState('contract');
+  // contract
+  const [cn, setCn]             = React.useState('');
+  const [cv, setCv]             = React.useState('');
+  const [cc, setCc]             = React.useState('');
+  const [ccon, setCcon]         = React.useState('');
+  const [ctype, setCtype]       = React.useState('سكني');
+  const [endDate, setEndDate]   = React.useState('');
+  // penalty config
+  const [enDelay, setEnDelay]   = React.useState(true);
+  const [rate, setRate]         = React.useState('0.1');
+  const [capP, setCapP]         = React.useState('10');
+  const [enQuality, setEnQuality] = React.useState(true);
+  // delay & defects
+  const [actualDate, setActualDate] = React.useState('');
+  const [manDays, setManDays]   = React.useState('');
+  const [defects, setDefects]   = React.useState([]);
+  // settlement
+  const [earned, setEarned]     = React.useState('');
+  const [retention, setRet]     = React.useState('');
+  const [advance, setAdv]       = React.useState('');
+  const [otherDed, setOther]    = React.useState('');
+  const [vars, setVars]         = React.useState('0');
+  // results
+  const [res, setRes]           = React.useState(null);
+
+  const inp = { width:'100%', padding:'8px 10px', borderRadius:8, border:'1px solid var(--line)', background:'var(--bg)', color:'var(--ink)', fontSize:14, fontFamily:'inherit', boxSizing:'border-box' };
+  const lbl = { display:'block', fontSize:12, color:'var(--ink-3)', marginBottom:4 };
+  const row = { marginBottom:14 };
+
+  function delayDays() {
+    if (actualDate && endDate) return Math.max(0, Math.round((new Date(actualDate) - new Date(endDate)) / 86400000));
+    return Math.max(0, parseInt(manDays) || 0);
+  }
+
+  function buildReport(r) {
+    return [
+      '═══════════════════════════════════════════',
+      '   تقرير تقييم غرامات العقد الهندسي',
+      '═══════════════════════════════════════════',
+      'العقد:           ' + (r.cn || 'غير محدد'),
+      'قيمة العقد:      ' + fmt(r.cv) + ' د.ك',
+      'العميل:          ' + (r.cc || 'غير محدد'),
+      'المقاول:         ' + (r.ccon || 'غير محدد'),
+      'النوع:           ' + r.ctype,
+      '───────────────────────────────────────────',
+      'أيام التأخير:    ' + r.days + ' يوم',
+      'غرامة التأخير:   ' + fmt(r.dFin) + ' د.ك',
+      'غرامة الجودة:    ' + fmt(r.qTot) + ' د.ك',
+      'إجمالي الغرامات: ' + fmt(r.totPen) + ' د.ك',
+      '───────────────────────────────────────────',
+      'المستحقات:       ' + fmt(r.earn) + ' د.ك',
+      'الخصومات:        ' + fmt(r.totDed) + ' د.ك',
+      'التغييرات:       ' + fmt(r.varsV) + ' د.ك',
+      '───────────────────────────────────────────',
+      'الرصيد النهائي:  ' + fmt(r.balance) + ' د.ك',
+      'الحالة:          ' + (r.pos ? 'إيجابي ✅' : 'سالب 🔴'),
+      '───────────────────────────────────────────',
+      'تاريخ التقرير:   ' + new Date().toLocaleDateString('ar-KW'),
+      'النظام:          حاسبة الغرامات الهندسية',
+      '═══════════════════════════════════════════',
+    ].join('\n');
+  }
+
+  function doCalc() {
+    const value = parseFloat(cv) || 0;
+    if (!value) { alert('الرجاء إدخال قيمة العقد'); setTab('contract'); return; }
+    const days = delayDays();
+    const mults = { simple:0.5, medium:1.0, critical:2.0 };
+    const sevLbl = { simple:'بسيط', medium:'متوسط', critical:'خطير' };
+
+    // delay
+    let dGross=0, dFin=0, dCap=0;
+    if (enDelay && days > 0) {
+      dGross = value * (parseFloat(rate)||0) / 100 * days;
+      dFin = dGross;
+      const capAmt = value * (parseFloat(capP)||0) / 100;
+      if (capAmt > 0 && dGross > capAmt) { dCap = dGross - capAmt; dFin = capAmt; }
+    }
+
+    // quality
+    let qTot=0;
+    const dds = defects.map(d => {
+      const dp = value * 0.01 * (mults[d.sev]||1) * (parseInt(d.qty)||1);
+      qTot += dp;
+      return { ...d, pen: Math.round(dp*100)/100, sevL: sevLbl[d.sev] };
+    });
+
+    const totPen  = Math.round((dFin + qTot)*100)/100;
+    const earn    = parseFloat(earned) || value;
+    const totDed  = (parseFloat(retention)||0) + (parseFloat(advance)||0) + (parseFloat(otherDed)||0);
+    const varsV   = parseFloat(vars)||0;
+    const balance = Math.round((earn - totDed - totPen + varsV)*100)/100;
+
+    const r = {
+      cn, cv:value, cc, ccon, ctype,
+      days,
+      dGross:Math.round(dGross*100)/100, dCap:Math.round(dCap*100)/100, dFin:Math.round(dFin*100)/100,
+      qTot:Math.round(qTot*100)/100, dds,
+      totPen, earn, totDed:Math.round(totDed*100)/100,
+      dedBreak: [
+        retention ? {l:'ضمان حسن التنفيذ', v:parseFloat(retention)} : null,
+        advance   ? {l:'استرداد الدفعة المقدمة', v:parseFloat(advance)} : null,
+        otherDed  ? {l:'خصومات أخرى', v:parseFloat(otherDed)} : null,
+      ].filter(Boolean),
+      varsV, balance, pos: balance >= 0
+    };
+    r.report = buildReport(r);
+    setRes(r);
+    setTab('results');
+  }
+
+  function addDef()          { setDefects(p => [...p, {id:Date.now(), desc:'', sev:'medium', qty:'1'}]); }
+  function remDef(id)        { setDefects(p => p.filter(d => d.id !== id)); }
+  function updDef(id, k, v)  { setDefects(p => p.map(d => d.id===id ? {...d,[k]:v} : d)); }
+
+  const TABS = [{id:'contract',l:'📋 العقد'},{id:'penalties',l:'⚙️ الغرامات'},{id:'defects',l:'⏱ التأخير'},{id:'settlement',l:'💰 التصفية'}];
+
+  return (
+    <div style={{padding:16}}>
+      <h2 style={{marginTop:0}}>🧮 حاسبة الغرامات الهندسية</h2>
+
+      {/* Tab bar */}
+      <div style={{display:'flex',gap:4,marginBottom:16,flexWrap:'wrap'}}>
+        {[...TABS, ...(res?[{id:'results',l:'📊 النتائج'}]:[])].map(t => (
+          <button key={t.id} onClick={()=>setTab(t.id)} style={{
+            padding:'6px 11px', borderRadius:20, fontSize:11, fontFamily:'inherit',
+            border:'none', cursor:'pointer',
+            background: tab===t.id ? 'var(--accent)' : 'var(--bg-soft)',
+            color: tab===t.id ? 'var(--bg)' : 'var(--ink-3)',
+            fontWeight: tab===t.id ? 700 : 400
+          }}>{t.l}</button>
+        ))}
+      </div>
+
+      {/* ── Contract ── */}
+      {tab==='contract' && (
+        <div className="card">
+          <h3 style={{marginTop:0}}>📋 بيانات العقد</h3>
+          <div style={row}><label style={lbl}>اسم العقد / المشروع</label><input style={inp} value={cn} onChange={e=>setCn(e.target.value)} placeholder="مثال: عقد بناء فيلا سكنية"/></div>
+          <div style={row}><label style={lbl}>قيمة العقد (د.ك) *</label><input style={inp} type="number" value={cv} onChange={e=>setCv(e.target.value)} placeholder="100000"/></div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:14}}>
+            <div><label style={lbl}>العميل</label><input style={inp} value={cc} onChange={e=>setCc(e.target.value)} placeholder="جهة العميل"/></div>
+            <div><label style={lbl}>المقاول</label><input style={inp} value={ccon} onChange={e=>setCcon(e.target.value)} placeholder="شركة المقاول"/></div>
+          </div>
+          <div style={row}><label style={lbl}>نوع المشروع</label>
+            <select style={inp} value={ctype} onChange={e=>setCtype(e.target.value)}>
+              {['سكني','تجاري','صناعي','بنية تحتية','خدمي'].map(t=><option key={t}>{t}</option>)}
+            </select>
+          </div>
+          <div style={row}><label style={lbl}>تاريخ انتهاء العقد المتفق عليه</label><input style={inp} type="date" value={endDate} onChange={e=>setEndDate(e.target.value)}/></div>
+          <button onClick={()=>setTab('penalties')} style={{width:'100%',padding:'10px',borderRadius:8,border:'none',background:'var(--accent)',color:'var(--bg)',fontWeight:600,cursor:'pointer',fontFamily:'inherit'}}>التالي: إعدادات الغرامات ←</button>
+        </div>
+      )}
+
+      {/* ── Penalties config ── */}
+      {tab==='penalties' && (
+        <div className="card">
+          <h3 style={{marginTop:0}}>⚙️ إعدادات الغرامات</h3>
+          <div style={{padding:12,background:'var(--info-bg)',borderRadius:8,marginBottom:12}}>
+            <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontWeight:600,marginBottom:enDelay?10:0}}>
+              <input type="checkbox" checked={enDelay} onChange={e=>setEnDelay(e.target.checked)}/> تفعيل غرامة التأخير
+            </label>
+            {enDelay && (<>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                <div><label style={lbl}>النسبة اليومية (%)</label><input style={inp} type="number" step="0.01" value={rate} onChange={e=>setRate(e.target.value)}/></div>
+                <div><label style={lbl}>الحد الأقصى (% من العقد)</label><input style={inp} type="number" step="0.5" value={capP} onChange={e=>setCapP(e.target.value)}/></div>
+              </div>
+              <div style={{marginTop:8,fontSize:11,color:'var(--ink-3)'}}>الصيغة: قيمة العقد × {rate||'0.1'}% × الأيام، الحد الأقصى {capP||'10'}%</div>
+            </>)}
+          </div>
+          <div style={{padding:12,background:'var(--warn-bg)',borderRadius:8}}>
+            <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontWeight:600}}>
+              <input type="checkbox" checked={enQuality} onChange={e=>setEnQuality(e.target.checked)}/> تفعيل غرامة الجودة والعيوب
+            </label>
+            {enQuality && (
+              <div style={{marginTop:8,fontSize:11,color:'var(--ink-3)',lineHeight:1.9}}>
+                • بسيط: قيمة العقد × 0.5% × الكمية<br/>
+                • متوسط: قيمة العقد × 1% × الكمية<br/>
+                • خطير: قيمة العقد × 2% × الكمية
+              </div>
+            )}
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:14}}>
+            <button onClick={()=>setTab('contract')} style={{padding:'10px',borderRadius:8,border:'1px solid var(--line)',background:'transparent',color:'var(--ink-3)',cursor:'pointer',fontFamily:'inherit'}}>→ السابق</button>
+            <button onClick={()=>setTab('defects')}  style={{padding:'10px',borderRadius:8,border:'none',background:'var(--accent)',color:'var(--bg)',fontWeight:600,cursor:'pointer',fontFamily:'inherit'}}>التالي ←</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delay & Defects ── */}
+      {tab==='defects' && (
+        <div>
+          {enDelay && (
+            <div className="card" style={{marginBottom:12}}>
+              <h3 style={{marginTop:0}}>⏱ التأخير</h3>
+              <div style={row}><label style={lbl}>تاريخ الانتهاء الفعلي</label><input style={inp} type="date" value={actualDate} onChange={e=>{setActualDate(e.target.value);setManDays('');}}/></div>
+              <div style={row}><label style={lbl}>أو أدخل عدد أيام التأخير يدوياً</label><input style={inp} type="number" value={manDays} onChange={e=>{setManDays(e.target.value);setActualDate('');}} placeholder="0"/></div>
+              {(actualDate||manDays) && <div style={{padding:10,background:'var(--neg-bg)',borderRadius:8,color:'var(--neg)',fontWeight:700,textAlign:'center'}}>⏱ أيام التأخير: {delayDays()} يوم</div>}
+            </div>
+          )}
+          {enQuality && (
+            <div className="card">
+              <h3 style={{marginTop:0}}>🔍 العيوب المكتشفة</h3>
+              {defects.map((d,i) => (
+                <div key={d.id} style={{padding:10,background:'var(--bg-soft)',borderRadius:8,marginBottom:8,border:'1px solid var(--line)'}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                    <span style={{fontSize:12,fontWeight:600,color:'var(--ink-3)'}}>عيب #{i+1}</span>
+                    <button onClick={()=>remDef(d.id)} style={{background:'var(--neg-bg)',color:'var(--neg)',border:'none',borderRadius:6,padding:'2px 10px',cursor:'pointer',fontSize:12,fontFamily:'inherit'}}>حذف</button>
+                  </div>
+                  <div style={{marginBottom:8}}><input style={inp} value={d.desc} onChange={e=>updDef(d.id,'desc',e.target.value)} placeholder="وصف العيب"/></div>
+                  <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:8}}>
+                    <div><label style={lbl}>درجة الشدة</label>
+                      <select style={inp} value={d.sev} onChange={e=>updDef(d.id,'sev',e.target.value)}>
+                        <option value="simple">بسيط (×0.5)</option>
+                        <option value="medium">متوسط (×1.0)</option>
+                        <option value="critical">خطير (×2.0)</option>
+                      </select>
+                    </div>
+                    <div><label style={lbl}>الكمية</label><input style={inp} type="number" min="1" value={d.qty} onChange={e=>updDef(d.id,'qty',e.target.value)}/></div>
+                  </div>
+                </div>
+              ))}
+              <button onClick={addDef} style={{width:'100%',padding:'8px',borderRadius:8,border:'2px dashed var(--line)',background:'transparent',color:'var(--ink-3)',cursor:'pointer',fontFamily:'inherit'}}>+ إضافة عيب</button>
+            </div>
+          )}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:12}}>
+            <button onClick={()=>setTab('penalties')} style={{padding:'10px',borderRadius:8,border:'1px solid var(--line)',background:'transparent',color:'var(--ink-3)',cursor:'pointer',fontFamily:'inherit'}}>→ السابق</button>
+            <button onClick={()=>setTab('settlement')} style={{padding:'10px',borderRadius:8,border:'none',background:'var(--accent)',color:'var(--bg)',fontWeight:600,cursor:'pointer',fontFamily:'inherit'}}>التالي ←</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Settlement ── */}
+      {tab==='settlement' && (
+        <div className="card">
+          <h3 style={{marginTop:0}}>💰 التصفية والمستحقات</h3>
+          <div style={row}><label style={lbl}>إجمالي المستحقات المكتسبة (د.ك)</label><input style={inp} type="number" value={earned} onChange={e=>setEarned(e.target.value)} placeholder={cv||'100000'}/></div>
+          <h4 style={{color:'var(--ink-2)',margin:'0 0 10px'}}>الخصومات</h4>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
+            <div><label style={lbl}>ضمان حسن التنفيذ (د.ك)</label><input style={inp} type="number" value={retention} onChange={e=>setRet(e.target.value)} placeholder="0"/></div>
+            <div><label style={lbl}>استرداد الدفعة المقدمة (د.ك)</label><input style={inp} type="number" value={advance} onChange={e=>setAdv(e.target.value)} placeholder="0"/></div>
+          </div>
+          <div style={row}><label style={lbl}>خصومات أخرى (د.ك)</label><input style={inp} type="number" value={otherDed} onChange={e=>setOther(e.target.value)} placeholder="0"/></div>
+          <div style={row}><label style={lbl}>أوامر التغيير (+إضافة / -خصم)</label><input style={inp} type="number" value={vars} onChange={e=>setVars(e.target.value)} placeholder="0"/></div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:8}}>
+            <button onClick={()=>setTab('defects')} style={{padding:'10px',borderRadius:8,border:'1px solid var(--line)',background:'transparent',color:'var(--ink-3)',cursor:'pointer',fontFamily:'inherit'}}>→ السابق</button>
+            <button onClick={doCalc} style={{padding:'11px',borderRadius:8,border:'none',background:'var(--pos)',color:'white',fontWeight:700,cursor:'pointer',fontFamily:'inherit',fontSize:14}}>🧮 احسب الآن</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Results ── */}
+      {tab==='results' && res && (
+        <div>
+          <div style={{padding:16,borderRadius:12,background:res.pos?'var(--pos-bg)':'var(--neg-bg)',border:`1px solid ${res.pos?'var(--pos)':'var(--neg)'}`,marginBottom:14,textAlign:'center'}}>
+            <div style={{fontSize:11,color:res.pos?'var(--pos)':'var(--neg)',marginBottom:4}}>الرصيد النهائي</div>
+            <div style={{fontSize:28,fontWeight:800,color:res.pos?'var(--pos)':'var(--neg)'}}>{fmt(Math.abs(res.balance))} د.ك</div>
+            <div style={{fontSize:12,marginTop:4,color:res.pos?'var(--pos)':'var(--neg)'}}>{res.pos?'✅ مستحقات إيجابية':'🔴 رصيد سالب — توجد مديونية'}</div>
+          </div>
+
+          {/* Penalty breakdown */}
+          <div className="card" style={{marginBottom:14}}>
+            <h3 style={{marginTop:0}}>📊 تفاصيل الغرامات</h3>
+            {res.days > 0 && (
+              <div style={{marginBottom:10,padding:10,background:'var(--bg-soft)',borderRadius:8}}>
+                <div style={{fontWeight:600,marginBottom:6,fontSize:13}}>⏱ غرامة التأخير</div>
+                {[
+                  ['عدد الأيام', res.days + ' يوم'],
+                  ['الغرامة الإجمالية', fmt(res.dGross) + ' د.ك'],
+                  ...(res.dCap>0 ? [['الحد الأقصى المطبق', '- ' + fmt(res.dCap) + ' د.ك']] : []),
+                  ['الغرامة النهائية', fmt(res.dFin) + ' د.ك'],
+                ].map(([k,v],i) => (
+                  <div key={i} style={{display:'flex',justifyContent:'space-between',fontSize:12,color:'var(--ink-3)',padding:'2px 0'}}>
+                    <span>{k}</span><strong style={{color:i===([['عدد الأيام',''],[''],['',...(res.dCap>0?[['']]:[])]].length-1)?'var(--neg)':'var(--ink)'}}>{v}</strong>
+                  </div>
+                ))}
+              </div>
+            )}
+            {res.dds.length > 0 && (
+              <div style={{padding:10,background:'var(--bg-soft)',borderRadius:8,marginBottom:10}}>
+                <div style={{fontWeight:600,marginBottom:6,fontSize:13}}>🔍 غرامة الجودة</div>
+                {res.dds.map((d,i) => (
+                  <div key={i} style={{display:'flex',justifyContent:'space-between',fontSize:12,color:'var(--ink-3)',padding:'3px 0',borderBottom:'1px solid var(--line)'}}>
+                    <span>{d.desc||`عيب ${i+1}`} <span style={{color:'var(--warn)'}}>({d.sevL})</span></span>
+                    <strong style={{color:'var(--neg)'}}>{fmt(d.pen)} د.ك</strong>
+                  </div>
+                ))}
+                <div style={{display:'flex',justifyContent:'space-between',fontSize:12,fontWeight:700,marginTop:4}}>
+                  <span>إجمالي غرامة الجودة</span><span style={{color:'var(--neg)'}}>{fmt(res.qTot)} د.ك</span>
+                </div>
+              </div>
+            )}
+            <div style={{display:'flex',justifyContent:'space-between',fontWeight:800,padding:'8px 0',borderTop:'2px solid var(--line)'}}>
+              <span>إجمالي الغرامات</span><span style={{color:'var(--neg)'}}>{fmt(res.totPen)} د.ك</span>
+            </div>
+          </div>
+
+          {/* Settlement summary */}
+          <div className="card" style={{marginBottom:14}}>
+            <h3 style={{marginTop:0}}>💰 ملخص التصفية</h3>
+            {[
+              {l:'إجمالي المستحقات', v:res.earn,     c:'var(--pos)', sign:'+'},
+              {l:'إجمالي الخصومات', v:res.totDed,   c:'var(--warn)',sign:'-'},
+              {l:'إجمالي الغرامات', v:res.totPen,   c:'var(--neg)', sign:'-'},
+              {l:'أوامر التغيير',   v:res.varsV,    c:res.varsV>=0?'var(--pos)':'var(--neg)',sign:res.varsV>=0?'+':'-'},
+            ].map((r,i)=>(
+              <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid var(--line)',fontSize:13}}>
+                <span>{r.l}</span>
+                <span style={{color:r.c,fontWeight:600}}>{r.sign} {fmt(Math.abs(r.v))} د.ك</span>
+              </div>
+            ))}
+            <div style={{display:'flex',justifyContent:'space-between',padding:'10px 0',fontWeight:800,fontSize:15}}>
+              <span>الرصيد النهائي</span>
+              <span style={{color:res.pos?'var(--pos)':'var(--neg)'}}>{res.balance>=0?'':'-'} {fmt(Math.abs(res.balance))} د.ك</span>
+            </div>
+          </div>
+
+          {/* Printable report */}
+          <div className="card">
+            <h3 style={{marginTop:0}}>📄 التقرير الرسمي</h3>
+            <pre id="calc-report" style={{fontFamily:'inherit',fontSize:11,lineHeight:1.8,whiteSpace:'pre-wrap',wordBreak:'break-word',background:'var(--bg-soft)',padding:12,borderRadius:8,color:'var(--ink-2)',maxHeight:360,overflowY:'auto',margin:0}}>{res.report}</pre>
+            <button onClick={()=>{const el=document.getElementById('calc-report');if(el&&navigator.clipboard)navigator.clipboard.writeText(el.innerText).then(()=>alert('✅ تم نسخ التقرير!'));}} style={{width:'100%',marginTop:8,padding:'9px',borderRadius:8,border:'1px solid var(--line)',background:'transparent',color:'var(--ink-3)',cursor:'pointer',fontFamily:'inherit'}}>📋 نسخ التقرير</button>
+          </div>
+
+          <button onClick={()=>{setTab('contract');setRes(null);}} style={{width:'100%',marginTop:12,padding:'10px',borderRadius:8,border:'1px solid var(--line)',background:'transparent',color:'var(--ink-3)',cursor:'pointer',fontFamily:'inherit'}}>🔄 حساب جديد</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Main app
 function App() {
   const [active, setActive] = useState('dashboard');
@@ -1504,12 +2059,13 @@ function App() {
     <div className="app-container" style={{ fontFamily: fontMap[font] }}>
       <div className="app-content">
         {active === 'dashboard' && <DashboardScreen/>}
-        {active === 'stores' && <ProjectsScreen/>}
+        {active === 'stores' && <WorkPricingScreen/>}
         {active === 'reports' && <ReportsScreen/>}
         {active === 'products' && <ProductsScreen/>}
         {active === 'materials' && <MaterialsTableScreen/>}
         {active === 'database' && <DatabaseScreen/>}
         {active === 'charts' && <ChartsScreen/>}
+        {active === 'calculator' && <CalculatorScreen/>}
         {active === 'admin' && <AdminScreen onAdminAuth={auth => { setIsAdmin(auth); if (!auth) setActive('settings'); }}/>}
         {active === 'settings' && <SettingsScreen onThemeChange={setTheme} onFontChange={setFont} theme={theme} font={font} onGoAdmin={() => setActive('admin')}/>}
       </div>
@@ -1518,8 +2074,8 @@ function App() {
         <button className={`nav-item ${active === 'dashboard' ? 'active' : ''}`} onClick={() => setActive('dashboard')} title="لوحة التحكم">
           📊<br/><span style={{fontSize: '10px'}}>التحكم</span>
         </button>
-        <button className={`nav-item ${active === 'stores' ? 'active' : ''}`} onClick={() => setActive('stores')} title="المتاجر">
-          🏪<br/><span style={{fontSize: '10px'}}>المتاجر</span>
+        <button className={`nav-item ${active === 'stores' ? 'active' : ''}`} onClick={() => setActive('stores')} title="نسبة الأعمال">
+          ⚡<br/><span style={{fontSize: '10px'}}>الأعمال</span>
         </button>
         <button className={`nav-item ${active === 'products' ? 'active' : ''}`} onClick={() => setActive('products')} title="المنتجات">
           🔍<br/><span style={{fontSize: '10px'}}>المنتجات</span>
@@ -1535,6 +2091,9 @@ function App() {
         </button>
         <button className={`nav-item ${active === 'reports' ? 'active' : ''}`} onClick={() => setActive('reports')} title="التقارير">
           📑<br/><span style={{fontSize: '10px'}}>التقارير</span>
+        </button>
+        <button className={`nav-item ${active === 'calculator' ? 'active' : ''}`} onClick={() => setActive('calculator')} title="الحاسبة">
+          🧮<br/><span style={{fontSize: '10px'}}>الحاسبة</span>
         </button>
         {isAdmin && <button className={`nav-item ${active === 'admin' ? 'active' : ''}`} onClick={() => setActive('admin')} title="الإدارة">
           🔐<br/><span style={{fontSize: '10px'}}>الإدارة</span>
