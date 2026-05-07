@@ -561,6 +561,18 @@ button{
 <script type="text/babel">
 const { useState, useMemo } = React;
 
+// Function to convert numbers to English
+function toEnglishNumbers(num) {
+  if (typeof num !== 'number') return num;
+  const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+  const englishNums = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+  let str = num.toString();
+  for (let i = 0; i < 10; i++) {
+    str = str.replace(new RegExp(arabicNums[i], 'g'), englishNums[i]);
+  }
+  return str;
+}
+
 // Real data from electrical scraper
 let APP_DATA = {
   kpis: { totalProducts: 0, uniqueStores: 0, avgPrice: 0, priceRange: '0-0' },
@@ -649,7 +661,7 @@ function loadRealData() {
 }
 
 // Format number
-const fmt = (n) => new Intl.NumberFormat('ar-KW').format(Math.round(n));
+const fmt = (n) => new Intl.NumberFormat('en-US').format(Math.round(n * 100) / 100);
 
 // Icon component
 function Icon({ name, size = 24 }) {
@@ -658,6 +670,70 @@ function Icon({ name, size = 24 }) {
     home: '🏠', settings: '⚙️', menu: '☰', close: '✕',
   };
   return <span style={{ fontSize: size }}>{icons[name] || '•'}</span>;
+}
+
+// Dashboard Product Search Component
+function DashboardProductSearch() {
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [selectedStore, setSelectedStore] = React.useState('');
+
+  const filtered = APP_DATA.materials.filter(m => {
+    const matchesSearch = m.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStore = !selectedStore || m.store === selectedStore;
+    return matchesSearch && matchesStore;
+  });
+
+  return (
+    <div className="card" style={{ margin: '16px', background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.05) 0%, rgba(148, 150, 218, 0.05) 100%)' }}>
+      <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 700, color: '#FF6B6B' }}>🔍 محرك البحث عن المنتجات</h3>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+        <input
+          type="text"
+          placeholder="ابحث عن منتج..."
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          style={{ padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--ink)' }}
+        />
+        <select
+          value={selectedStore}
+          onChange={e => setSelectedStore(e.target.value)}
+          style={{ padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--ink)' }}
+        >
+          <option value="">جميع المتاجر</option>
+          {APP_DATA.stores.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+        </select>
+      </div>
+
+      <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+        {filtered.length === 0 ? (
+          <p style={{ textAlign: 'center', color: 'var(--ink-3)', margin: '20px 0' }}>لا توجد منتجات مطابقة</p>
+        ) : (
+          <div style={{ display: 'grid', gap: '10px' }}>
+            {filtered.slice(0, 8).map(m => (
+              <div key={m.id} style={{ padding: '10px', background: 'var(--surface)', borderRadius: '8px', border: '1px solid var(--line)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, color: 'var(--ink)', marginBottom: '4px' }}>{m.name}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--ink-3)' }}>📍 {m.store}</div>
+                  </div>
+                  <div style={{ textAlign: 'left', minWidth: '70px' }}>
+                    <div style={{ fontWeight: 600, color: '#FF6B6B', fontSize: '14px' }}>{toEnglishNumbers(m.price.toFixed(2))} د.ك</div>
+                    <div style={{ fontSize: '11px', color: 'var(--ink-3)' }}>متوفر</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {filtered.length > 8 && (
+              <div style={{ textAlign: 'center', color: 'var(--ink-3)', fontSize: '12px', marginTop: '8px' }}>
+                عدد النتائج: {toEnglishNumbers(filtered.length)}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 // Dashboard screen
@@ -700,26 +776,8 @@ function DashboardScreen() {
         </div>
       </div>
 
-      {/* Revenue chart */}
-      <div className="card" style={{ margin: '16px', background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.05) 0%, rgba(148, 150, 218, 0.05) 100%)' }}>
-        <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 700, color: '#FF6B6B' }}>📊 توزيع المنتجات</h3>
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-end', height: '120px' }}>
-          {APP_DATA.revenue.map((val, i) => {
-            const colors = ['#FF6B6B', '#FF8E72', '#FFB6A3', '#F38181', '#AA96DA', '#FCBAD3', '#A8E6CF', '#FFD3B6'];
-            return (
-              <div key={i} style={{
-                flex: 1,
-                background: colors[i % colors.length],
-                borderRadius: '8px 8px 0 0',
-                height: `${(val / Math.max(...APP_DATA.revenue, 1)) * 100}%`,
-                position: 'relative',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                transition: 'all 0.3s'
-              }} title={`${val} منتج`}/>
-            );
-          })}
-        </div>
-      </div>
+      {/* Product Search Engine */}
+      <DashboardProductSearch />
 
       {/* Stores list */}
       <div className="card" style={{ margin: '16px' }}>
@@ -1447,7 +1505,7 @@ function App() {
   const [active, setActive] = useState('dashboard');
   const [theme, setTheme] = useState('light');
   const [colorScheme, setColorScheme] = useState('a');
-  const [font, setFont] = useState('plex');
+  const [font, setFont] = useState('cairo');
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(APP_DATA);
 
