@@ -12,107 +12,59 @@ st.set_page_config(
 # Hide streamlit UI elements and remove padding/margins
 hide_streamlit_style = """
 <style>
-    /* Hide Streamlit elements */
-    #MainMenu {visibility: hidden; display: none !important;}
-    footer {visibility: hidden; display: none !important;}
-    header {visibility: hidden; display: none !important;}
+    /* ── Core Streamlit chrome ── */
+    #MainMenu {visibility: hidden !important; display: none !important;}
+    footer {visibility: hidden !important; display: none !important;}
+    header {visibility: hidden !important; display: none !important;}
 
-    /* Hide all Streamlit toolbars and controls */
-    [data-testid="stToolbar"] {display: none !important;}
-    [data-testid="stDecoration"] {display: none !important;}
-    [data-testid="stStatusWidget"] {display: none !important;}
-    .stStatusWidget {display: none !important;}
+    /* ── Toolbars & decorations ── */
+    [data-testid="stToolbar"]               {display: none !important;}
+    [data-testid="stDecoration"]            {display: none !important;}
+    [data-testid="stStatusWidget"]          {display: none !important;}
+    [data-testid="stToolbarButton"]         {display: none !important;}
+    [data-testid="toolbarButtonContainer"]  {display: none !important;}
+    [data-testid="manage-app-button"]       {display: none !important;}
+    [data-testid="stActionButton"]          {display: none !important;}
+    [data-testid="stActionButtonIcon"]      {display: none !important;}
 
-    /* Hide manage app button and code button specifically */
-    button[kind="secondary"]:last-of-type {display: none !important;}
-    [data-testid="toolbarButtonContainer"] {display: none !important;}
-    [data-testid="stToolbarButton"] {display: none !important;}
-    button[aria-label*="code"] {display: none !important;}
-    button[title*="code"] {display: none !important;}
+    /* ── Manage App / Deploy buttons (Streamlit Cloud) ── */
+    .stDeployButton                         {display: none !important;}
+    .stActionButton                         {display: none !important;}
+    button[title="Manage app"]              {display: none !important;}
+    button[aria-label="Manage app"]         {display: none !important;}
+    button[title*="anage"]                  {display: none !important;}
+    button[aria-label*="anage"]             {display: none !important;}
+    a[href*="/manage"]                      {display: none !important;}
 
-    /* Hide Streamlit's code viewer and code button */
-    div[data-testid="stCode"] {display: none !important;}
-    .streamlit-code-viewer {display: none !important;}
-    .streamlit-container code {display: none !important;}
+    /* ── Code / source viewer ── */
+    button[aria-label="Code"]               {display: none !important;}
+    button[title="Code"]                    {display: none !important;}
+    button[aria-label*="code"]              {display: none !important;}
+    button[title*="code"]                   {display: none !important;}
+    div[data-testid="stCode"]               {display: none !important;}
+    .streamlit-code-viewer                  {display: none !important;}
 
-    /* Hide code/source button from Streamlit */
-    button[aria-label="Code"] {display: none !important;}
-    button[title="Code"] {display: none !important;}
-    a[href*="code"] {display: none !important;}
+    /* ── Community Cloud badge / watermark ── */
+    .viewerBadge                            {display: none !important;}
+    .css-5rimss                             {display: none !important;}
+    .ef3psqc11                              {display: none !important;}
+    #badge-container                        {display: none !important;}
+    [data-testid="stHostedBadge"]           {display: none !important;}
+    [data-testid="community-cloud-badge"]   {display: none !important;}
+    a[href*="streamlit.io"]                 {display: none !important;}
+    a[href*="share.streamlit"]              {display: none !important;}
 
-    /* Hide any element with 'code' text */
-    button:nth-child(n) {
-        visibility: visible !important;
-    }
+    /* ── Remove all padding / margin ── */
+    .stMain                  {padding: 0 !important; margin: 0 !important;}
+    .stMainBlockContainer    {padding: 0 !important; margin: 0 !important; max-width: 100% !important; width: 100% !important;}
+    .element-container       {padding: 0 !important; margin: 0 !important;}
+    iframe                   {margin: 0 !important; padding: 0 !important;}
+    body                     {margin: 0 !important; padding: 0 !important;}
 
-    /* Specifically target and hide the code snippet viewer */
-    .streamlit-expanderContent {display: none !important;}
-    [role="dialog"] {display: none !important;}
-
-    /* Hide any element with text 'manage' or 'Manage' */
-    button[title*="anage"], button[aria-label*="anage"] {display: none !important;}
-
-    /* Remove Streamlit padding and margins */
-    .stMain {
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-
-    .stMainBlockContainer {
-        padding: 0 !important;
-        margin: 0 !important;
-        max-width: 100% !important;
-        width: 100% !important;
-    }
-
-    /* Remove iframe padding */
-    iframe {
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    /* Remove body padding */
-    body {
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    /* Full width container */
-    .element-container {
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-
-    /* Universal bottom-right element hiding */
-    *[style*="bottom:"] {display: none !important;}
-    *[style*="right:"] {display: none !important;}
-    *[style*="bottom"] {display: none !important;}
-    *[style*="right"] {display: none !important;}
-
-    /* Hide any fixed/absolute positioned elements at bottom-right */
-    [style*="bottom"], [style*="right"] {
-        display: none !important !important;
-        visibility: hidden !important;
-        z-index: 0 !important;
-    }
-
-    /* Aggressive hiding of all bottom-right positioned elements */
-    div[style*="position"], div[style*="bottom"], div[style*="right"],
-    button[style*="bottom"], button[style*="right"] {
-        display: none !important;
-    }
-
-    /* Hide any tooltip or popup at bottom-right */
-    .stToast, .stNotification {display: none !important;}
-
-    /* Hide Streamlit sidebar and controls */
-    .stSidebar {display: none !important;}
-    .stAppViewContainer {overflow: hidden !important;}
-
-    /* Hide watermark and branding */
-    .css-5rimss {display: none !important;}
-    .ef3psqc11 {display: none !important;}
-    .viewerBadge {display: none !important;}
+    /* ── Sidebar / misc ── */
+    .stSidebar               {display: none !important;}
+    .stAppViewContainer      {overflow: hidden !important;}
+    .stToast, .stNotification{display: none !important;}
 </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
@@ -126,33 +78,43 @@ except FileNotFoundError:
     st.error("❌ Error: pricing-app.html file not found!")
     st.info("Make sure pricing-app.html is in the same directory as app.py")
 
-# Add JavaScript to hide any code buttons or panels
+# JS — continuously hide any Streamlit chrome that loads dynamically
 st.markdown("""
 <script>
-// Remove code button and any code-related UI from Streamlit
-document.addEventListener('DOMContentLoaded', function() {
-    // Hide any button with code-related text or attributes
+(function() {
+  function hideStreamlitChrome() {
+    const selectors = [
+      '[data-testid="stToolbar"]',
+      '[data-testid="stStatusWidget"]',
+      '[data-testid="stToolbarButton"]',
+      '[data-testid="manage-app-button"]',
+      '[data-testid="stActionButton"]',
+      '[data-testid="stHostedBadge"]',
+      '[data-testid="community-cloud-badge"]',
+      '.stDeployButton',
+      '.viewerBadge',
+      '#badge-container',
+    ];
+    selectors.forEach(sel => {
+      document.querySelectorAll(sel).forEach(el => el.style.setProperty('display','none','important'));
+    });
+    // Buttons by text / title
     document.querySelectorAll('button').forEach(btn => {
-        if (btn.textContent.toLowerCase().includes('code') ||
-            btn.getAttribute('aria-label')?.toLowerCase().includes('code') ||
-            btn.getAttribute('title')?.toLowerCase().includes('code')) {
-            btn.style.display = 'none';
-        }
+      const t = (btn.textContent + (btn.title || '') + (btn.getAttribute('aria-label') || '')).toLowerCase();
+      if (t.includes('manage') || t.includes('code') || t.includes('deploy')) {
+        btn.style.setProperty('display','none','important');
+      }
     });
-
-    // Hide code dialogs/modals
-    document.querySelectorAll('[role="dialog"]').forEach(dialog => {
-        dialog.style.display = 'none';
+    // Links to streamlit.io / share.streamlit
+    document.querySelectorAll('a').forEach(a => {
+      if (a.href && (a.href.includes('streamlit.io') || a.href.includes('share.streamlit'))) {
+        a.style.setProperty('display','none','important');
+      }
     });
-});
-
-// Also check periodically for any dynamically added elements
-setInterval(() => {
-    document.querySelectorAll('button').forEach(btn => {
-        if (btn.textContent.toLowerCase().includes('code')) {
-            btn.style.display = 'none';
-        }
-    });
-}, 500);
+  }
+  // Run on load and periodically
+  document.addEventListener('DOMContentLoaded', hideStreamlitChrome);
+  setInterval(hideStreamlitChrome, 800);
+})();
 </script>
 """, unsafe_allow_html=True)

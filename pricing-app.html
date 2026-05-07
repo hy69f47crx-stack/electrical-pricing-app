@@ -850,47 +850,6 @@ function ProjectsScreen() {
   );
 }
 
-// Catalog screen
-function CatalogScreen() {
-  if (APP_DATA.loading) {
-    return <div style={{ padding: '16px', textAlign: 'center', color: 'var(--ink-3)' }}>جاري تحميل الكتالوج...</div>;
-  }
-
-  return (
-    <div style={{ padding: '16px' }}>
-      <h2 style={{ marginTop: 0 }}>كتالوج المنتجات الكهربائية</h2>
-      {APP_DATA.materials.length === 0 ? (
-        <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ink-3)' }}>
-          لا توجد منتجات متاحة حالياً
-        </div>
-      ) : (
-        <div className="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>اسم المنتج</th>
-                <th>المتجر</th>
-                <th>السعر</th>
-                <th>التوفر</th>
-              </tr>
-            </thead>
-            <tbody>
-              {APP_DATA.materials.map(m => (
-                <tr key={m.id}>
-                  <td><strong>{m.name}</strong></td>
-                  <td style={{ fontSize: '12px', color: 'var(--ink-3)' }}>{m.store}</td>
-                  <td className="num"><strong>{fmt(m.price)}</strong> د.ك</td>
-                  <td><span className={`badge badge-${m.stock > 100 ? 'pos' : m.stock > 50 ? 'info' : 'warn'}`}>{m.stock} وحدة</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // Reports screen
 function ReportsScreen() {
   if (APP_DATA.loading) {
@@ -1306,7 +1265,7 @@ function ChartsScreen() {
 }
 
 // Admin panel screen
-function AdminScreen() {
+function AdminScreen({ onAdminAuth }) {
   const [adminPassword, setAdminPassword] = React.useState('');
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
   const [lastUpdate, setLastUpdate] = React.useState(localStorage.getItem('lastDataUpdate') || 'لم يتم التحديث');
@@ -1317,6 +1276,7 @@ function AdminScreen() {
     if (adminPassword === 'admin2024') {
       setIsAuthenticated(true);
       setAdminPassword('');
+      if (onAdminAuth) onAdminAuth(true);
     } else {
       alert('❌ كلمة المرور غير صحيحة');
     }
@@ -1469,7 +1429,7 @@ function AdminScreen() {
 
       {/* Logout */}
       <button
-        onClick={() => setIsAuthenticated(false)}
+        onClick={() => { setIsAuthenticated(false); if (onAdminAuth) onAdminAuth(false); }}
         style={{ width: '100%', marginTop: 16, padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', background: 'transparent', color: 'var(--ink-3)', cursor: 'pointer' }}
       >
         تسجيل الخروج
@@ -1479,7 +1439,7 @@ function AdminScreen() {
 }
 
 // Settings screen
-function SettingsScreen({ onThemeChange, onFontChange, theme, font }) {
+function SettingsScreen({ onThemeChange, onFontChange, theme, font, onGoAdmin }) {
   return (
     <div style={{ padding: '16px' }}>
       <h2 style={{ marginTop: 0 }}>الإعدادات</h2>
@@ -1496,6 +1456,15 @@ function SettingsScreen({ onThemeChange, onFontChange, theme, font }) {
           <option value="tajawal">Tajawal</option>
         </select>
       </div>
+      {/* Hidden admin entry — subtle, no label */}
+      <div style={{ marginTop: 32, textAlign: 'center' }}>
+        <button
+          onClick={onGoAdmin}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-4)', fontSize: '11px', opacity: 0.4, padding: '4px 8px' }}
+        >
+          ⚙
+        </button>
+      </div>
     </div>
   );
 }
@@ -1508,6 +1477,7 @@ function App() {
   const [font, setFont] = useState('cairo');
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(APP_DATA);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   React.useEffect(() => {
     loadRealData().then(() => {
@@ -1535,14 +1505,13 @@ function App() {
       <div className="app-content">
         {active === 'dashboard' && <DashboardScreen/>}
         {active === 'stores' && <ProjectsScreen/>}
-        {active === 'catalog' && <CatalogScreen/>}
         {active === 'reports' && <ReportsScreen/>}
         {active === 'products' && <ProductsScreen/>}
         {active === 'materials' && <MaterialsTableScreen/>}
         {active === 'database' && <DatabaseScreen/>}
         {active === 'charts' && <ChartsScreen/>}
-        {active === 'admin' && <AdminScreen/>}
-        {active === 'settings' && <SettingsScreen onThemeChange={setTheme} onFontChange={setFont} theme={theme} font={font}/>}
+        {active === 'admin' && <AdminScreen onAdminAuth={auth => { setIsAdmin(auth); if (!auth) setActive('settings'); }}/>}
+        {active === 'settings' && <SettingsScreen onThemeChange={setTheme} onFontChange={setFont} theme={theme} font={font} onGoAdmin={() => setActive('admin')}/>}
       </div>
 
       <div className="bottom-bar">
@@ -1554,9 +1523,6 @@ function App() {
         </button>
         <button className={`nav-item ${active === 'products' ? 'active' : ''}`} onClick={() => setActive('products')} title="المنتجات">
           🔍<br/><span style={{fontSize: '10px'}}>المنتجات</span>
-        </button>
-        <button className={`nav-item ${active === 'catalog' ? 'active' : ''}`} onClick={() => setActive('catalog')} title="كتالوج">
-          🛍️<br/><span style={{fontSize: '10px'}}>كتالوج</span>
         </button>
         <button className={`nav-item ${active === 'materials' ? 'active' : ''}`} onClick={() => setActive('materials')} title="جدول المواد">
           📋<br/><span style={{fontSize: '10px'}}>الجدول</span>
@@ -1570,9 +1536,9 @@ function App() {
         <button className={`nav-item ${active === 'reports' ? 'active' : ''}`} onClick={() => setActive('reports')} title="التقارير">
           📑<br/><span style={{fontSize: '10px'}}>التقارير</span>
         </button>
-        <button className={`nav-item ${active === 'admin' ? 'active' : ''}`} onClick={() => setActive('admin')} title="الإدارة">
+        {isAdmin && <button className={`nav-item ${active === 'admin' ? 'active' : ''}`} onClick={() => setActive('admin')} title="الإدارة">
           🔐<br/><span style={{fontSize: '10px'}}>الإدارة</span>
-        </button>
+        </button>}
         <button className={`nav-item ${active === 'settings' ? 'active' : ''}`} onClick={() => setActive('settings')} title="الإعدادات">
           ⚙️<br/><span style={{fontSize: '10px'}}>الإعدادات</span>
         </button>
