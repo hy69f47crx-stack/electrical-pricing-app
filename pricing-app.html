@@ -219,21 +219,19 @@ body{font-family:"IBM Plex Sans Arabic","Tajawal",system-ui,sans-serif;backgroun
 }
 
 .bottom-bar{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
+  /* In-flow flex child — no position:fixed so it always shows in iframes too */
+  flex-shrink:0;
   height:65px;
   background:var(--surface);
   border-top:1px solid var(--line);
   padding:8px;
-  display:grid;
-  grid-template-columns:repeat(auto-fit, minmax(90px, 1fr));
+  display:flex;
+  flex-direction:row;
+  flex-wrap:nowrap;
+  align-items:stretch;
   gap:4px;
   overflow-x:auto;
   overflow-y:hidden;
-  z-index:998;
-  flex-shrink:0;
   margin:0;
 }
 
@@ -382,45 +380,63 @@ button{
   font-variant-numeric:tabular-nums;
 }
 
-/* Hide desktop app on mobile screens */
+/* Always show the desktop app on all screen sizes */
+#root { display: flex !important; }
+
+/* ── Mobile: nav bar at bottom (in-flow, optimized for small screens) ── */
 @media (max-width:768px){
-  #root { display: none !important; }
-  #mobile-app { display: flex !important; }
+  .sidebar-header { display: none !important; }
+
+  /* Nav items wrap to fill the row evenly, touch-friendly sizes */
+  .nav-item {
+    flex: 1 1 auto !important;
+    min-width: 52px !important;
+    min-height: 50px !important;  /* Touch target: 44-48px minimum */
+    padding: 6px 8px !important;
+    font-size: 10px !important;
+  }
+
+  /* Better spacing on mobile — reduce padding on cards and content */
+  .card { margin: 10px 8px !important; padding: 10px !important; }
+
+  /* Headings: minimize spacing on mobile */
+  h2, h3 { margin-top: 0 !important; margin-bottom: 8px !important; line-height: 1.2 !important; }
+
+  /* Table container: tight spacing */
+  .table-container { margin: 8px 0 !important; }
+
+  /* Optimize button sizes for touch */
+  button { min-height: 40px !important; }
+  input, select { min-height: 40px !important; padding: 8px 10px !important; }
+
+  /* Ensure tables are readable */
+  table { font-size: 13px !important; }
+  th, td { padding: 8px 6px !important; }
 }
 
-/* Hide mobile app on desktop screens */
+/* ── Desktop: bottom-bar becomes right sidebar ── */
 @media (min-width:769px){
-  #mobile-app { display: none !important; }
-  #root { display: flex !important; }
-
-  /* ── Desktop sidebar layout ── */
   .app-container {
     flex-direction: row-reverse;   /* RTL: sidebar on right */
   }
   .app-content {
     flex: 1 !important;
-    height: 100% !important;
+    min-width: 0 !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    padding-bottom: 0 !important;
-    min-width: 0;
   }
   /* Transform bottom-bar → right sidebar */
   .bottom-bar {
-    position: static !important;
     width: 200px !important;
     height: 100% !important;
     flex-direction: column !important;
+    flex-shrink: 0 !important;
     border-top: none !important;
     border-left: 1px solid var(--line) !important;
     padding: 0 0 16px 0 !important;
-    display: flex !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    grid-template-columns: unset !important;
     gap: 2px !important;
-    z-index: auto !important;
-    flex-shrink: 0 !important;
     background: var(--surface) !important;
   }
   /* Nav items: horizontal icon+label */
@@ -466,24 +482,6 @@ button{
   }
 }
 
-/* ===== MOBILE APP STYLING (min-width: 0) ===== */
-#mobile-app {
-  display: none;
-  flex-direction: column;
-  width: 100vw;
-  height: 100vh;
-  background: var(--bg);
-  padding: 0 !important;
-  margin: 0 !important;
-  color: var(--ink);
-  font-family: "IBM Plex Sans Arabic","Tajawal",system-ui,sans-serif;
-  overflow: hidden;
-  margin: 0;
-  padding: 0;
-  position: fixed;
-  top: 0;
-  left: 0;
-}
 
 .mobile-header {
   background: var(--surface);
@@ -623,7 +621,6 @@ button{
 </head>
 <body>
 <div id="root"></div>
-<div id="mobile-app"></div>
 
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
@@ -1181,41 +1178,6 @@ function WorkPricingScreen() {
   );
 }
 
-// Reports screen
-function ReportsScreen() {
-  if (APP_DATA.loading) {
-    return <div style={{ padding: '16px', textAlign: 'center', color: 'var(--ink-3)' }}>جاري تحميل التقارير...</div>;
-  }
-
-  const totalDistribution = APP_DATA.revenue.reduce((a,b)=>a+b, 0);
-  const avgDistribution = Math.round(totalDistribution / (APP_DATA.revenue.length || 1));
-
-  return (
-    <div style={{ padding: '16px' }}>
-      <h2 style={{ marginTop: 0 }}>التقارير والإحصائيات</h2>
-      <div className="card">
-        <h3>ملخص المنتجات</h3>
-        <p><strong>إجمالي المنتجات المرصودة:</strong> <span className="num">{fmt(APP_DATA.kpis.totalProducts)}</span></p>
-        <p><strong>عدد المتاجر:</strong> <span className="num">{fmt(APP_DATA.kpis.uniqueStores)}</span></p>
-        <p><strong>متوسط السعر:</strong> <span className="num">{fmt(APP_DATA.kpis.avgPrice)} د.ك</span></p>
-        <p><strong>نطاق الأسعار:</strong> <span className="num">{APP_DATA.kpis.priceRange} د.ك</span></p>
-      </div>
-      <div className="card" style={{ marginTop: 16 }}>
-        <h3>إحصائيات الأنواع</h3>
-        <p><strong>إجمالي أنواع المنتجات:</strong> {APP_DATA.materials.length}</p>
-        <p><strong>المتاجر النشطة:</strong> {APP_DATA.stores.filter(s => s.productCount > 20).length}</p>
-        <p><strong>متوسط المنتجات لكل متجر:</strong> {Math.round(APP_DATA.kpis.totalProducts / (APP_DATA.kpis.uniqueStores || 1))}</p>
-      </div>
-      <div className="card" style={{ marginTop: 16 }}>
-        <h3>التوزيع الشهري</h3>
-        <p><strong>إجمالي التوزيع:</strong> <span className="num">{fmt(totalDistribution)}</span></p>
-        <p><strong>متوسط التوزيع:</strong> <span className="num">{fmt(avgDistribution)}</span></p>
-        <p><strong>عدد الفترات:</strong> {APP_DATA.revenue.length}</p>
-      </div>
-    </div>
-  );
-}
-
 // Products search screen
 function ProductsScreen() {
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -1349,9 +1311,56 @@ function MaterialsTableScreen() {
 
   const total = materials.reduce((sum, m) => sum + (m.total || 0), 0);
 
-  const exportWord = async () => {
-    const doc = new (window.docx || {}).Document();
-    alert('تصدير Word قريباً - استخدم Excel الآن');
+  const exportWord = () => {
+    const rows = materials.filter(m => m.product).map(m =>
+      `<tr>
+         <td align="right"  style="border:1px solid #ccc;padding:8px">${m.product}</td>
+         <td align="center" style="border:1px solid #ccc;padding:8px">${m.quantity}</td>
+         <td align="center" style="border:1px solid #ccc;padding:8px">${(parseFloat(m.unitPrice)||0).toFixed(3)}</td>
+         <td align="center" style="border:1px solid #ccc;padding:8px;font-weight:bold">${(parseFloat(m.total)||0).toFixed(3)}</td>
+       </tr>`
+    ).join('');
+    const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
+      xmlns:w='urn:schemas-microsoft-com:office:word'
+      xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml>
+        <style>
+          body{font-family:Arial,sans-serif;direction:rtl;padding:24px;font-size:11pt}
+          h1{font-size:16pt;margin-bottom:6px}
+          p{margin:3px 0}
+          table{width:100%;border-collapse:collapse;margin-top:16px}
+          th{background:#1a1a1a;color:#fff;border:1px solid #555;padding:9px;text-align:center}
+        </style>
+      </head>
+      <body dir="rtl">
+        <h1>📋 قائمة المواد الكهربائية</h1>
+        <p><strong>التاريخ:</strong> ${new Date().toLocaleDateString('ar-KW')}</p>
+        <p><strong>عدد البنود:</strong> ${materials.filter(m=>m.product).length}</p>
+        <br>
+        <table>
+          <thead>
+            <tr>
+              <th>المنتج</th><th>الكمية</th>
+              <th>السعر الفردي (د.ك)</th><th>المجموع (د.ك)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+            <tr style="background:#f0f0f0;font-weight:bold">
+              <td colspan="3" align="right" style="border:1px solid #ccc;padding:9px;font-size:12pt">الإجمالي الكلي</td>
+              <td align="center" style="border:1px solid #ccc;padding:9px;font-size:12pt">${total.toFixed(3)} د.ك</td>
+            </tr>
+          </tbody>
+        </table>
+      </body>
+    </html>`;
+    const blob = new Blob(['﻿'+html], {type:'application/msword'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'قائمة-المواد-'+new Date().toISOString().split('T')[0]+'.doc';
+    a.click();
   };
 
   const exportExcel = () => {
@@ -1523,74 +1532,6 @@ function DatabaseScreen() {
           </tbody>
         </table>
       </div>
-    </div>
-  );
-}
-
-// Charts screen
-function ChartsScreen() {
-  const [chartType, setChartType] = React.useState('stores');
-
-  const storeDistribution = APP_DATA.stores.map(s => ({
-    name: s.name,
-    percent: Math.round((s.productCount / APP_DATA.kpis.totalProducts) * 100)
-  }));
-
-  const priceRanges = [
-    { range: '0 - 2 د.ك', count: APP_DATA.materials.filter(m => m.price < 2).length },
-    { range: '2 - 5 د.ك', count: APP_DATA.materials.filter(m => m.price >= 2 && m.price < 5).length },
-    { range: '5 - 10 د.ك', count: APP_DATA.materials.filter(m => m.price >= 5 && m.price < 10).length },
-    { range: '10+ د.ك', count: APP_DATA.materials.filter(m => m.price >= 10).length },
-  ];
-
-  return (
-    <div style={{ padding: '16px' }}>
-      <h2 style={{ marginTop: 0 }}>📈 الرسوم البيانية</h2>
-
-      <div className="card" style={{ marginBottom: 16 }}>
-        <label style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-          <span>نوع الرسم البياني:</span>
-          <select value={chartType} onChange={e => setChartType(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: '1px solid var(--line)' }}>
-            <option value="stores">توزيع المتاجر</option>
-            <option value="prices">نطاقات الأسعار</option>
-          </select>
-        </label>
-      </div>
-
-      {chartType === 'stores' ? (
-        <div className="card">
-          <h3>توزيع المنتجات حسب المتجر</h3>
-          {storeDistribution.map(s => (
-            <div key={s.name} style={{ marginBottom: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <strong>{s.name}</strong>
-                <span className="num">{s.percent}%</span>
-              </div>
-              <div style={{ background: 'var(--bg-soft)', borderRadius: 8, height: 20, overflow: 'hidden' }}>
-                <div style={{ background: 'var(--accent)', height: '100%', width: `${s.percent}%`, borderRadius: 8 }}></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="card">
-          <h3>توزيع المنتجات حسب نطاق السعر</h3>
-          {priceRanges.map(p => {
-            const percent = Math.round((p.count / APP_DATA.materials.length) * 100);
-            return (
-              <div key={p.range} style={{ marginBottom: 16 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <strong>{p.range}</strong>
-                  <span className="num">{percent}% ({p.count})</span>
-                </div>
-                <div style={{ background: 'var(--bg-soft)', borderRadius: 8, height: 20, overflow: 'hidden' }}>
-                  <div style={{ background: 'var(--info)', height: '100%', width: `${Math.max(percent, 5)}%`, borderRadius: 8 }}></div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }
@@ -1796,6 +1737,313 @@ function SettingsScreen({ onThemeChange, onFontChange, theme, font, onGoAdmin })
           ⚙
         </button>
       </div>
+    </div>
+  );
+}
+
+// ── Mind Map Screen for Engineering Cases ──────────────────────────────────
+function MindMapScreen() {
+  // === STATE ===
+  const [plaintiff,    setPlaintiff]    = React.useState('شركة العمائر للمقاولات');
+  const [defendant,    setDefendant]    = React.useState('المؤسسة العامة للكهرباء');
+  const [caseNum,      setCaseNum]      = React.useState('ق.إ/2024/45');
+  const [contractDate, setContractDate] = React.useState('2023-06-15');
+  const [workStart,    setWorkStart]    = React.useState('2023-07-01');
+  const [payment1,     setPayment1]     = React.useState('2023-08-10');
+  const [payment2,     setPayment2]     = React.useState('2023-11-20');
+  const [disputeDate,  setDisputeDate]  = React.useState('2024-02-15');
+  const [inspectDate,  setInspectDate]  = React.useState('2024-03-10');
+  const [activeTab,    setActiveTab]    = React.useState('mindmap');
+  const [customEvents, setCustomEvents] = React.useState([]);
+
+  // === HELPERS ===
+  function formatDate(s) {
+    if (!s) return '';
+    const [y,m,d] = s.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  function daysBetween(a, b) {
+    if (!a || !b) return '-';
+    return Math.floor(Math.abs(new Date(b) - new Date(a)) / 86400000);
+  }
+  function impFromType(type) {
+    if (['عقد','نزاع'].some(w => type.includes(w)))    return { level:'حرج',        color:'#cc2222', bg:'#fff0f0' };
+    if (['معاينة','فحص'].some(w => type.includes(w)))  return { level:'عالي جداً',  color:'#2244cc', bg:'#f0f0ff' };
+    if (['دفعة','بدء'].some(w => type.includes(w)))    return { level:'عالي',        color:'#227722', bg:'#f0fff0' };
+    return { level:'متوسط', color:'#888888', bg:'#f8f8f8' };
+  }
+
+  // Custom events CRUD
+  function addCustom() { setCustomEvents(prev => [...prev, { id: Date.now(), date:'', label:'', type:'دفعة' }]); }
+  function removeCustom(id) { setCustomEvents(prev => prev.filter(e => e.id !== id)); }
+  function updateCustom(id, field, val) { setCustomEvents(prev => prev.map(e => e.id === id ? {...e,[field]:val} : e)); }
+
+  // === ALL EVENTS (built-in + custom, sorted by date) ===
+  const builtIn = [
+    { date: contractDate, label: 'إبرام العقد',        type: 'عقد'     },
+    { date: workStart,    label: 'بدء الأعمال',         type: 'بدء'    },
+    { date: payment1,     label: 'صرف الدفعة الأولى',  type: 'دفعة'   },
+    { date: payment2,     label: 'صرف الدفعة الثانية', type: 'دفعة'   },
+    { date: disputeDate,  label: 'تاريخ النزاع',        type: 'نزاع'   },
+    { date: inspectDate,  label: 'تاريخ المعاينة',      type: 'معاينة' },
+  ];
+  const allEvents = [...builtIn, ...customEvents.filter(e => e.date && e.label)]
+    .filter(e => e.date)
+    .sort((a,b) => new Date(a.date) - new Date(b.date))
+    .map((e, idx, arr) => ({
+      ...e,
+      order: idx + 1,
+      daysFromPrev: idx === 0 ? '-' : daysBetween(arr[idx-1].date, e.date),
+      imp: impFromType(e.type)
+    }));
+
+  // === WORD EXPORT ===
+  function exportWord() {
+    const rows = allEvents.map(e =>
+      `<tr style="background:${e.imp.bg}">
+         <td align="center" style="border:1px solid #ccc;padding:7px">${e.order}</td>
+         <td align="center" style="border:1px solid #ccc;padding:7px;font-weight:bold">${formatDate(e.date)}</td>
+         <td align="right"  style="border:1px solid #ccc;padding:7px">${e.label}</td>
+         <td align="center" style="border:1px solid #ccc;padding:7px">${e.daysFromPrev}</td>
+         <td align="center" style="border:1px solid #ccc;padding:7px;color:${e.imp.color};font-weight:bold">${e.imp.level}</td>
+       </tr>`
+    ).join('');
+    const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
+      xmlns:w='urn:schemas-microsoft-com:office:word'
+      xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml>
+        <style>
+          body{font-family:Arial,sans-serif;direction:rtl;padding:24px;font-size:11pt}
+          h1{font-size:16pt;margin-bottom:8px}
+          p{margin:3px 0}
+          table{width:100%;border-collapse:collapse;margin-top:18px}
+          th{background:#1a1a1a;color:#fff;border:1px solid #555;padding:8px;text-align:center}
+          td{font-size:10.5pt}
+        </style>
+      </head>
+      <body dir="rtl">
+        <h1>📋 جدول الأحداث الزمنية للقضية</h1>
+        <p><strong>رقم القضية:</strong> ${caseNum}</p>
+        <p><strong>المدعي:</strong> ${plaintiff}</p>
+        <p><strong>المدعى عليه:</strong> ${defendant}</p>
+        <br>
+        <table>
+          <thead>
+            <tr>
+              <th>الترتيب</th><th>التاريخ</th><th>الحدث</th>
+              <th>المدة (أيام)</th><th>الأهمية</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </body>
+    </html>`;
+    const blob = new Blob(['﻿'+html], {type:'application/msword'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'تقرير-'+caseNum.replace(/\//g,'-')+'.doc';
+    a.click();
+  }
+
+  // === SHARED STYLES ===
+  const inpStyle = {
+    width:'100%', padding:'7px 8px',
+    border:'1px solid var(--line)', borderRadius:'4px',
+    boxSizing:'border-box', fontFamily:'inherit',
+    direction:'rtl', backgroundColor:'var(--surface)', color:'var(--ink)'
+  };
+  function tabBtn(id, label) {
+    const active = activeTab === id;
+    return (
+      <button onClick={() => setActiveTab(id)} style={{
+        padding:'7px 14px',
+        backgroundColor: active ? 'var(--ink)' : 'var(--surface)',
+        color: active ? 'var(--bg)' : 'var(--ink)',
+        border: `2px solid ${active ? 'var(--ink)' : 'var(--line)'}`,
+        borderRadius:'4px', cursor:'pointer',
+        fontFamily:'inherit', fontWeight:'bold', fontSize:'0.88em'
+      }}>{label}</button>
+    );
+  }
+
+  // === RENDER ===
+  return (
+    <div style={{ padding:'16px' }}>
+      <h2 style={{ marginTop:0, marginBottom:'14px' }}>🗺️ الخريطة الذهنية لإدارة القضايا</h2>
+
+      {/* ── Main inputs ── */}
+      <div style={{
+        display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px',
+        marginBottom:'10px', padding:'14px',
+        backgroundColor:'var(--surface)', borderRadius:'8px', border:'1px solid var(--line)'
+      }}>
+        <div>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>المدعي</label>
+          <input type="text" value={plaintiff} onChange={e=>setPlaintiff(e.target.value)} style={inpStyle}/>
+        </div>
+        <div>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>المدعى عليه</label>
+          <input type="text" value={defendant} onChange={e=>setDefendant(e.target.value)} style={inpStyle}/>
+        </div>
+        <div style={{gridColumn:'1/-1'}}>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>رقم القضية</label>
+          <input type="text" value={caseNum} onChange={e=>setCaseNum(e.target.value)} style={inpStyle}/>
+        </div>
+        <div>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>إبرام العقد</label>
+          <input type="date" value={contractDate} onChange={e=>setContractDate(e.target.value)} style={inpStyle}/>
+        </div>
+        <div>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>بدء الأعمال</label>
+          <input type="date" value={workStart} onChange={e=>setWorkStart(e.target.value)} style={inpStyle}/>
+        </div>
+        <div>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>صرف الدفعة الأولى</label>
+          <input type="date" value={payment1} onChange={e=>setPayment1(e.target.value)} style={inpStyle}/>
+        </div>
+        <div>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>صرف الدفعة الثانية</label>
+          <input type="date" value={payment2} onChange={e=>setPayment2(e.target.value)} style={inpStyle}/>
+        </div>
+        <div>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>تاريخ النزاع</label>
+          <input type="date" value={disputeDate} onChange={e=>setDisputeDate(e.target.value)} style={inpStyle}/>
+        </div>
+        <div>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>تاريخ المعاينة</label>
+          <input type="date" value={inspectDate} onChange={e=>setInspectDate(e.target.value)} style={inpStyle}/>
+        </div>
+      </div>
+
+      {/* ── Custom events (compact rows) ── */}
+      {customEvents.length > 0 && (
+        <div style={{
+          marginBottom:'8px', padding:'8px 12px',
+          backgroundColor:'var(--bg-soft)', borderRadius:'6px', border:'1px solid var(--line)'
+        }}>
+          <div style={{fontSize:'0.78em',color:'var(--ink-3)',marginBottom:'6px',fontWeight:'bold'}}>
+            📌 أحداث إضافية ({customEvents.length})
+          </div>
+          {customEvents.map(ev => (
+            <div key={ev.id} style={{display:'flex',gap:'6px',marginBottom:'5px',alignItems:'center'}}>
+              <input type="date" value={ev.date}
+                onChange={e=>updateCustom(ev.id,'date',e.target.value)}
+                style={{...inpStyle,width:'138px',padding:'4px 6px',fontSize:'0.82em'}}/>
+              <input type="text" value={ev.label} placeholder="وصف الحدث..."
+                onChange={e=>updateCustom(ev.id,'label',e.target.value)}
+                style={{...inpStyle,flex:1,padding:'4px 8px',fontSize:'0.82em'}}/>
+              <select value={ev.type} onChange={e=>updateCustom(ev.id,'type',e.target.value)}
+                style={{...inpStyle,width:'110px',padding:'4px 6px',fontSize:'0.82em'}}>
+                <option value="عقد">🔴 حرج</option>
+                <option value="معاينة">🔵 عالي جداً</option>
+                <option value="دفعة">🟢 عالي</option>
+                <option value="__">⚪ متوسط</option>
+              </select>
+              <button onClick={()=>removeCustom(ev.id)} style={{
+                padding:'4px 8px',border:'1px solid var(--line)',
+                backgroundColor:'var(--surface)',color:'var(--ink)',
+                borderRadius:'4px',cursor:'pointer',fontSize:'0.9em'
+              }}>🗑</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Action bar: add event | tabs | export ── */}
+      <div style={{display:'flex',gap:'8px',marginBottom:'12px',flexWrap:'wrap',alignItems:'center'}}>
+        <button onClick={addCustom} style={{
+          padding:'7px 12px', backgroundColor:'var(--surface)', color:'var(--ink)',
+          border:'1.5px dashed var(--line-strong)', borderRadius:'4px',
+          cursor:'pointer', fontFamily:'inherit', fontSize:'0.85em'
+        }}>➕ إضافة حدث</button>
+        <div style={{width:'1px',height:'22px',backgroundColor:'var(--line)',margin:'0 2px'}}/>
+        {tabBtn('mindmap',  '🧠 الخريطة الذهنية')}
+        {tabBtn('timeline', '📊 جدول الأحداث')}
+        <button onClick={exportWord} style={{
+          padding:'7px 14px', backgroundColor:'#1a6b3c', color:'white',
+          border:'none', borderRadius:'4px', cursor:'pointer',
+          fontFamily:'inherit', fontWeight:'bold', fontSize:'0.88em'
+        }}>📄 تصدير Word</button>
+      </div>
+
+      {/* ── Mind Map view ── */}
+      {activeTab === 'mindmap' && (
+        <div style={{
+          border:'2px solid var(--line)', borderRadius:'8px', padding:'20px',
+          backgroundColor:'var(--surface)', minHeight:'320px',
+          display:'flex', flexDirection:'column', alignItems:'center', gap:'18px'
+        }}>
+          <div style={{fontSize:'1.1em',fontWeight:'bold',color:'var(--ink)',textAlign:'center'}}>
+            🎯 {caseNum}
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'14px',width:'100%',maxWidth:'760px'}}>
+            <div style={{padding:'12px',border:'1px solid var(--line)',borderRadius:'6px',backgroundColor:'var(--bg)'}}>
+              <div style={{fontWeight:'bold',marginBottom:'6px',color:'var(--ink-2)'}}>👥 أطراف الدعوى</div>
+              <div style={{fontSize:'0.88em',lineHeight:'1.7'}}>
+                <div><strong>المدعي:</strong> {plaintiff}</div>
+                <div><strong>المدعى عليه:</strong> {defendant}</div>
+              </div>
+            </div>
+            <div style={{padding:'12px',border:'1px solid var(--line)',borderRadius:'6px',backgroundColor:'var(--bg)'}}>
+              <div style={{fontWeight:'bold',marginBottom:'6px',color:'var(--ink-2)'}}>📅 التواريخ الحاسمة</div>
+              <div style={{fontSize:'0.82em',lineHeight:'1.75'}}>
+                {allEvents.slice(0,4).map(e => (
+                  <div key={e.label+e.date}>
+                    <span style={{color:e.imp.color}}>●</span> {e.label}: {formatDate(e.date)}
+                  </div>
+                ))}
+                {allEvents.length > 4 && <div style={{color:'var(--ink-3)',marginTop:'2px'}}>+ {allEvents.length-4} أحداث أخرى</div>}
+              </div>
+            </div>
+            <div style={{padding:'12px',border:'1px solid var(--line)',borderRadius:'6px',backgroundColor:'var(--bg)'}}>
+              <div style={{fontWeight:'bold',marginBottom:'6px',color:'var(--ink-2)'}}>✅ الالتزامات</div>
+              <div style={{fontSize:'0.88em',lineHeight:'1.7'}}>
+                <div>• صرف الدفعات المالية</div>
+                <div>• تنفيذ الأعمال الهندسية</div>
+                <div>• الفحص والقبول</div>
+              </div>
+            </div>
+            <div style={{padding:'12px',border:'1px solid var(--line)',borderRadius:'6px',backgroundColor:'var(--bg)'}}>
+              <div style={{fontWeight:'bold',marginBottom:'6px',color:'var(--ink-2)'}}>📋 نطاق العقد</div>
+              <div style={{fontSize:'0.88em',lineHeight:'1.7'}}>
+                <div>• جداول الكميات</div>
+                <div>• المواصفات الفنية</div>
+                <div>• معايير الجودة</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Timeline table ── */}
+      {activeTab === 'timeline' && (
+        <div style={{overflowX:'auto'}}>
+          <table style={{width:'100%',borderCollapse:'collapse',border:'2px solid var(--line)'}}>
+            <thead>
+              <tr style={{backgroundColor:'var(--ink)',color:'var(--bg)'}}>
+                <th style={{padding:'9px 10px',textAlign:'center',borderRight:'1px solid var(--line-strong)'}}>الترتيب</th>
+                <th style={{padding:'9px 10px',textAlign:'center',borderRight:'1px solid var(--line-strong)'}}>التاريخ</th>
+                <th style={{padding:'9px 10px',textAlign:'right', borderRight:'1px solid var(--line-strong)'}}>الحدث</th>
+                <th style={{padding:'9px 10px',textAlign:'center',borderRight:'1px solid var(--line-strong)'}}>المدة (أيام)</th>
+                <th style={{padding:'9px 10px',textAlign:'center'}}>الأهمية</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allEvents.map((evt,idx) => (
+                <tr key={idx} style={{backgroundColor:evt.imp.bg,borderBottom:'1px solid var(--line)'}}>
+                  <td style={{padding:'7px 8px',textAlign:'center',borderRight:'1px solid var(--line)'}}>{evt.order}</td>
+                  <td style={{padding:'7px 8px',textAlign:'center',borderRight:'1px solid var(--line)',fontWeight:'bold'}}>{formatDate(evt.date)}</td>
+                  <td style={{padding:'7px 8px',textAlign:'right', borderRight:'1px solid var(--line)'}}>{evt.label}</td>
+                  <td style={{padding:'7px 8px',textAlign:'center',borderRight:'1px solid var(--line)'}}>{evt.daysFromPrev}</td>
+                  <td style={{padding:'7px 8px',textAlign:'center',color:evt.imp.color,fontWeight:'bold'}}>{evt.imp.level}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
@@ -2170,19 +2418,18 @@ function App() {
       <div className="app-content">
         {active === 'dashboard' && <DashboardScreen/>}
         {active === 'stores' && <WorkPricingScreen/>}
-        {active === 'reports' && <ReportsScreen/>}
         {active === 'products' && <ProductsScreen/>}
         {active === 'materials' && <MaterialsTableScreen/>}
         {active === 'database' && <DatabaseScreen/>}
-        {active === 'charts' && <ChartsScreen/>}
+        {active === 'mindmap' && <MindMapScreen/>}
         {active === 'calculator' && <CalculatorScreen/>}
         {active === 'admin' && <AdminScreen onAdminAuth={auth => { setIsAdmin(auth); if (!auth) setActive('settings'); }}/>}
         {active === 'settings' && <SettingsScreen onThemeChange={setTheme} onFontChange={setFont} theme={theme} font={font} onGoAdmin={() => setActive('admin')}/>}
       </div>
 
       <div className="bottom-bar">
-        {/* Sidebar header — visible only on desktop via CSS */}
-        <div className="sidebar-header" style={{display:'none'}}>
+        {/* Sidebar header — visible only on desktop via CSS media query */}
+        <div className="sidebar-header">
           <div className="sidebar-logo">⚡</div>
           <div className="sidebar-title">برنامج التسعير</div>
           <div className="sidebar-sub">الكهربائي</div>
@@ -2203,11 +2450,8 @@ function App() {
         <button className={`nav-item ${active === 'database' ? 'active' : ''}`} onClick={() => setActive('database')} title="قاعدة البيانات">
           💾<span>البيانات</span>
         </button>
-        <button className={`nav-item ${active === 'charts' ? 'active' : ''}`} onClick={() => setActive('charts')} title="الرسوم البيانية">
-          📈<span>الرسوم</span>
-        </button>
-        <button className={`nav-item ${active === 'reports' ? 'active' : ''}`} onClick={() => setActive('reports')} title="التقارير">
-          📑<span>التقارير</span>
+        <button className={`nav-item ${active === 'mindmap' ? 'active' : ''}`} onClick={() => setActive('mindmap')} title="خريطة الأفكار القضائية">
+          🗺️<span>الخريطة</span>
         </button>
         <button className={`nav-item ${active === 'calculator' ? 'active' : ''}`} onClick={() => setActive('calculator')} title="الحاسبة">
           🧮<span>الحاسبة</span>
@@ -2223,301 +2467,7 @@ function App() {
   );
 }
 
-// Mobile App Component
-function MobileApp() {
-  const [activeScreen, setActiveScreen] = React.useState('home');
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [materials, setMaterials] = React.useState([{ id: 1, product: '', quantity: 1, unitPrice: 0, total: 0 }]);
-  const [theme, setTheme] = React.useState(localStorage.getItem('theme') || 'light');
-
-  React.useEffect(() => {
-    // Apply theme to html element
-    const htmlElement = document.documentElement;
-    if (theme === 'dark') {
-      htmlElement.classList.add('dark');
-    } else {
-      htmlElement.classList.remove('dark');
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  const allProducts = APP_DATA.materials || [];
-  const filteredProducts = allProducts.filter(p =>
-    p.name.includes(searchQuery) || searchQuery === ''
-  );
-
-  const handleAddMaterial = () => {
-    setMaterials([...materials, {
-      id: Date.now(),
-      product: '',
-      quantity: 1,
-      unitPrice: 0,
-      total: 0
-    }]);
-  };
-
-  const handleRemoveMaterial = (id) => {
-    if (materials.length > 1) {
-      setMaterials(materials.filter(m => m.id !== id));
-    }
-  };
-
-  const handleMaterialChange = (id, field, value) => {
-    setMaterials(materials.map(m => {
-      if (m.id === id) {
-        const updated = { ...m, [field]: value };
-        if (field === 'product') {
-          const product = allProducts.find(p => p.name === value);
-          if (product) {
-            updated.unitPrice = product.price;
-          }
-        }
-        if (field === 'quantity' || field === 'unitPrice') {
-          updated.total = (parseFloat(updated.quantity) || 0) * (parseFloat(updated.unitPrice) || 0);
-        }
-        return updated;
-      }
-      return m;
-    }));
-  };
-
-  const totalAmount = materials.reduce((sum, m) => sum + (m.total || 0), 0);
-
-  return (
-    <div id="mobile-app" style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100vh' }}>
-      {/* Header */}
-      <div className="mobile-header" style={{ background: 'var(--ink)', color: 'var(--bg)', padding: '14px 16px' }}>
-        ⚡ برنامج التسعير الكهربائي
-      </div>
-
-      {/* Content */}
-      <div className="mobile-content">
-        {activeScreen === 'home' && (
-          <div>
-            <div className="mobile-card" style={{ textAlign: 'center' }}>
-              <h2 style={{ margin: '10px 0', fontSize: '18px' }}>📊 ملخص البيانات</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
-                <div style={{ background: 'var(--bg-soft)', padding: '10px', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--ink-3)' }}>المنتجات</div>
-                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--ink)' }}>{APP_DATA.kpis.totalProducts}</div>
-                </div>
-                <div style={{ background: 'var(--bg-soft)', padding: '10px', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--ink-3)' }}>المتاجر</div>
-                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--ink)' }}>{APP_DATA.stores.length}</div>
-                </div>
-                <div style={{ background: 'var(--bg-soft)', padding: '10px', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--ink-3)' }}>السعر المتوسط</div>
-                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--ink)' }}>{APP_DATA.kpis.avgPrice.toFixed(2)} د.ك</div>
-                </div>
-                <div style={{ background: 'var(--bg-soft)', padding: '10px', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--ink-3)' }}>النطاق</div>
-                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--ink)' }}>{APP_DATA.kpis.priceRange}</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mobile-card">
-              <h3 style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: '600' }}>📦 أفضل المتاجر</h3>
-              {APP_DATA.stores.slice(0, 5).map((store, idx) => (
-                <div key={idx} style={{ padding: '8px 0', borderBottom: idx < 4 ? '1px solid var(--line)' : 'none', fontSize: '13px' }}>
-                  <div style={{ fontWeight: '500', color: 'var(--ink)' }}>{store.name}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--ink-3)' }}>
-                    {store.productCount} منتج • متوسط {store.avgPrice.toFixed(2)} د.ك
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {activeScreen === 'search' && (
-          <div>
-            <div className="mobile-card">
-              <div className="mobile-input-group">
-                <label>🔍 ابحث عن منتج</label>
-                <input
-                  type="text"
-                  placeholder="اسم المنتج..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {filteredProducts.map(product => (
-              <div key={product.id} className="mobile-card" style={{ fontSize: '13px' }}>
-                <div style={{ fontWeight: '600', color: 'var(--ink)', marginBottom: '6px' }}>{product.name}</div>
-                <div style={{ fontSize: '12px', color: 'var(--ink-3)', marginBottom: '4px' }}>📍 {product.store}</div>
-                <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--ink)' }}>{product.price.toFixed(2)} د.ك</div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {activeScreen === 'materials' && (
-          <div>
-            <div className="mobile-card">
-              <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600' }}>📋 جدول المواد</h3>
-
-              {materials.map((material, idx) => (
-                <div key={material.id} style={{ marginBottom: '12px', padding: '10px', background: 'var(--bg-soft)', borderRadius: '8px' }}>
-                  <div className="mobile-input-group">
-                    <label>المنتج</label>
-                    <select
-                      value={material.product}
-                      onChange={e => handleMaterialChange(material.id, 'product', e.target.value)}
-                      style={{ fontSize: '13px' }}
-                    >
-                      <option value="">اختر منتج</option>
-                      {allProducts.map((p, i) => (
-                        <option key={i} value={p.name}>{p.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    <div className="mobile-input-group">
-                      <label>الكمية</label>
-                      <input
-                        type="number"
-                        value={material.quantity}
-                        onChange={e => handleMaterialChange(material.id, 'quantity', e.target.value)}
-                        min="1"
-                      />
-                    </div>
-                    <div className="mobile-input-group">
-                      <label>السعر الفردي</label>
-                      <input
-                        type="number"
-                        value={material.unitPrice.toFixed(2)}
-                        disabled
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ padding: '8px', background: 'var(--bg)', borderRadius: '6px', marginTop: '8px', textAlign: 'center', fontWeight: '600', fontSize: '13px', color: 'var(--ink)' }}>
-                    المجموع: {material.total.toFixed(2)} د.ك
-                  </div>
-
-                  {materials.length > 1 && (
-                    <button
-                      onClick={() => handleRemoveMaterial(material.id)}
-                      style={{ width: '100%', marginTop: '8px', padding: '8px', background: 'var(--neg-bg)', color: 'var(--neg)', border: 'none', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', fontWeight: '500' }}
-                    >
-                      ❌ حذف
-                    </button>
-                  )}
-                </div>
-              ))}
-
-              <button
-                onClick={handleAddMaterial}
-                className="mobile-btn"
-                style={{ marginTop: '10px' }}
-              >
-                ➕ إضافة صف جديد
-              </button>
-
-              <div style={{ marginTop: '14px', padding: '12px', background: 'var(--info-bg)', borderRadius: '8px', textAlign: 'center', borderLeft: '4px solid var(--info)' }}>
-                <div style={{ fontSize: '12px', color: 'var(--ink-3)', marginBottom: '4px' }}>الإجمالي النهائي</div>
-                <div style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--ink)' }}>{totalAmount.toFixed(2)} د.ك</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeScreen === 'stores' && (
-          <div>
-            <h2 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600' }}>🏪 المتاجر</h2>
-            {APP_DATA.stores.map((store, idx) => (
-              <div key={idx} className="mobile-card">
-                <div style={{ fontWeight: '600', fontSize: '14px', color: 'var(--ink)', marginBottom: '8px' }}>{store.name}</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '12px' }}>
-                  <div style={{ background: 'var(--bg-soft)', padding: '8px', borderRadius: '6px' }}>
-                    <div style={{ color: 'var(--ink-3)' }}>المنتجات</div>
-                    <div style={{ fontWeight: '600', fontSize: '14px', color: 'var(--ink)' }}>{store.productCount}</div>
-                  </div>
-                  <div style={{ background: 'var(--bg-soft)', padding: '8px', borderRadius: '6px' }}>
-                    <div style={{ color: 'var(--ink-3)' }}>السعر المتوسط</div>
-                    <div style={{ fontWeight: '600', fontSize: '14px', color: 'var(--ink)' }}>{store.avgPrice.toFixed(2)} د.ك</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {activeScreen === 'settings' && (
-          <div>
-            <div className="mobile-card">
-              <h3 style={{ margin: '0 0 14px 0', fontSize: '14px', fontWeight: '600' }}>⚙️ الإعدادات</h3>
-
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={theme === 'dark'}
-                    onChange={e => setTheme(e.target.checked ? 'dark' : 'light')}
-                  />
-                  <span style={{ fontSize: '13px' }}>🌙 الوضع الليلي</span>
-                </label>
-              </div>
-
-              <div style={{ padding: '10px', background: 'var(--info-bg)', borderRadius: '8px', fontSize: '12px', color: 'var(--info)', lineHeight: '1.5' }}>
-                <strong>ℹ️ نسخة الجوال</strong><br/>
-                برنامج التسعير الكهربائي<br/>
-                v1.0.0 - May 2026<br/>
-                تم التطوير بواسطة Claude
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Bottom Navigation */}
-      <div className="mobile-nav-bar">
-        <button
-          className="mobile-nav-btn"
-          onClick={() => setActiveScreen('home')}
-          style={{ color: activeScreen === 'home' ? 'var(--ink)' : 'var(--ink-3)', background: activeScreen === 'home' ? 'var(--bg-soft)' : 'transparent' }}
-        >
-          🏠<br/><span style={{fontSize: '10px'}}>الرئيسية</span>
-        </button>
-        <button
-          className="mobile-nav-btn"
-          onClick={() => setActiveScreen('search')}
-          style={{ color: activeScreen === 'search' ? 'var(--ink)' : 'var(--ink-3)', background: activeScreen === 'search' ? 'var(--bg-soft)' : 'transparent' }}
-        >
-          🔍<br/><span style={{fontSize: '10px'}}>البحث</span>
-        </button>
-        <button
-          className="mobile-nav-btn"
-          onClick={() => setActiveScreen('materials')}
-          style={{ color: activeScreen === 'materials' ? 'var(--ink)' : 'var(--ink-3)', background: activeScreen === 'materials' ? 'var(--bg-soft)' : 'transparent' }}
-        >
-          📋<br/><span style={{fontSize: '10px'}}>المواد</span>
-        </button>
-        <button
-          className="mobile-nav-btn"
-          onClick={() => setActiveScreen('stores')}
-          style={{ color: activeScreen === 'stores' ? 'var(--ink)' : 'var(--ink-3)', background: activeScreen === 'stores' ? 'var(--bg-soft)' : 'transparent' }}
-        >
-          🏪<br/><span style={{fontSize: '10px'}}>المتاجر</span>
-        </button>
-        <button
-          className="mobile-nav-btn"
-          onClick={() => setActiveScreen('settings')}
-          style={{ color: activeScreen === 'settings' ? 'var(--ink)' : 'var(--ink-3)', background: activeScreen === 'settings' ? 'var(--bg-soft)' : 'transparent' }}
-        >
-          ⚙️<br/><span style={{fontSize: '10px'}}>الإعدادات</span>
-        </button>
-      </div>
-    </div>
-  );
-}
-
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
-ReactDOM.createRoot(document.getElementById('mobile-app')).render(<MobileApp/>);
 </script>
 </body>
 </html>

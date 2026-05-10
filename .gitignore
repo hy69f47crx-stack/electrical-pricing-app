@@ -1,55 +1,18 @@
+# متغيرات البيئة — لا ترفع هذا الملف أبداً
+.env
+
+# بيانات مجلوبة — تُرفع مرة واحدة كبيانات أولية
+# products_all.json
+# price_history.json
+# matched_groups.json
+# work_descriptions.json
+
 # Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
+*.pyc
+*.pyo
+.venv/
 venv/
-ENV/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
 
 # Streamlit
-.streamlit/
-.streamlit_cache/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Backups
-*.backup
-*.tar.gz
-*.zip
-*-backup.*
-
-# Logs
-*.log
-
-# Keep these important files
-!pricing-app.html
-!products_all.json
-!app.py
-!requirements.txt
-!GITHUB_README.md
+.streamlit/secrets.toml
