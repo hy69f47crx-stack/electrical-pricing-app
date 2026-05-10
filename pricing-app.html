@@ -245,7 +245,7 @@ body{font-family:"IBM Plex Sans Arabic","Tajawal",system-ui,sans-serif;backgroun
   border:none;
   background:transparent;
   cursor:pointer;
-  color:var(--ink-3);
+  color:var(--ink-2);
   font-size:11px;
   font-weight:500;
   border-radius:8px;
@@ -950,7 +950,7 @@ function WorkPricingScreen() {
       padding:'7px 14px', borderRadius:20, fontSize:12,
       border:`2px solid ${active ? col : 'var(--line)'}`,
       cursor:'pointer', fontFamily:'inherit', fontWeight:active?700:400,
-      background:active?col:'transparent', color:active?'#fff':'var(--ink-3)',
+      background:active?col:'transparent', color:active?'#fff':'var(--ink-2)',
       transition:'all .15s', whiteSpace:'nowrap'
     }}>{lbl}</button>
   );
@@ -986,7 +986,7 @@ function WorkPricingScreen() {
   return (
     <div style={{padding:16}}>
       <h2 style={{marginTop:0, fontSize:18}}>⚡ نسبة الأعمال الكهربائية</h2>
-      <p style={{marginTop:-4, marginBottom:14, fontSize:12, color:'var(--ink-3)'}}>
+      <p style={{marginTop:-4, marginBottom:14, fontSize:12, color:'var(--ink-2)'}}>
         أدخل القيمة الإجمالية وصنّف المشروع، ثم فعّل أو استثنِ أي بند — تُعاد النسب تلقائياً.
       </p>
 
@@ -995,7 +995,7 @@ function WorkPricingScreen() {
         <h3 style={{marginTop:0, marginBottom:14, fontSize:14}}>🏗️ تصنيف المشروع</h3>
         <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:16}}>
           <div>
-            <div style={{fontSize:11, color:'var(--ink-3)', marginBottom:8, fontWeight:600}}>حجم المشروع</div>
+            <div style={{fontSize:11, color:'var(--ink-2)', marginBottom:8, fontWeight:600}}>حجم المشروع</div>
             <div style={{display:'flex', flexWrap:'wrap', gap:6}}>
               {['small','medium','large'].map(s =>
                 badge(size===s, sizeLabel[s], ()=>setSize(s), sizeColors[s])
@@ -1003,7 +1003,7 @@ function WorkPricingScreen() {
             </div>
           </div>
           <div>
-            <div style={{fontSize:11, color:'var(--ink-3)', marginBottom:8, fontWeight:600}}>نوع المشروع</div>
+            <div style={{fontSize:11, color:'var(--ink-2)', marginBottom:8, fontWeight:600}}>نوع المشروع</div>
             <div style={{display:'flex', flexWrap:'wrap', gap:6}}>
               {['residential','commercial','industrial'].map(t =>
                 badge(ptype===t, typeLabel[t], ()=>setPtype(t), typeColors[t])
@@ -1014,7 +1014,7 @@ function WorkPricingScreen() {
 
         {/* Total value input */}
         <div style={{background:'var(--bg-soft)', borderRadius:10, padding:'14px 16px', border:'2px solid var(--line)'}}>
-          <div style={{fontSize:12, color:'var(--ink-3)', marginBottom:6, fontWeight:600}}>💰 إجمالي قيمة الأعمال الكهربائية</div>
+          <div style={{fontSize:12, color:'var(--ink-2)', marginBottom:6, fontWeight:600}}>💰 إجمالي قيمة الأعمال الكهربائية</div>
           <div style={{display:'flex', alignItems:'center', gap:10}}>
             <input
               type="number" min="0" step="100"
@@ -1025,7 +1025,7 @@ function WorkPricingScreen() {
                 background:'var(--surface)', color:'var(--ink)', fontSize:18, fontFamily:'inherit',
                 fontWeight:700, outline:'none'}}
             />
-            <div style={{fontSize:16, fontWeight:700, color:'var(--ink-3)', whiteSpace:'nowrap'}}>د.ك</div>
+            <div style={{fontSize:16, fontWeight:700, color:'var(--ink-2)', whiteSpace:'nowrap'}}>د.ك</div>
           </div>
           {totalVal > 0 && (
             <div style={{marginTop:8, fontSize:12, color:'var(--pos)', fontWeight:600}}>
