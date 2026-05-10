@@ -481,89 +481,46 @@ def reload_all():
 
 
 # ─────────────────────────────────────────────────────────────────
-# ACTIONS — إدخال يدوي + معالجة محلية فقط (لا يوجد scraping)
+# ACTIONS (local only) — تحديث شهري محمي بكلمة سر
 # ─────────────────────────────────────────────────────────────────
-from datetime import datetime as _dt
-
-PRODUCTS_FILE = BASE_DIR / "products_all.json"
-HISTORY_FILE  = BASE_DIR / "price_history.json"
-
-
-def _read_json(path: Path, default):
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return default
-
-
-def _write_json(path: Path, data):
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-
-def add_manual_product(name: str, price: float, store: str, url: str = "") -> bool:
-    """يضيف منتجاً يدوياً إلى products_all.json وسجل الأسعار."""
-    name  = (name or "").strip()
-    store = (store or "").strip()
-    if not name or not store or price is None or price <= 0:
-        return False
-
-    record = {
-        "store": store,
-        "name": name,
-        "price": float(price),
-        "url": (url or "").strip(),
-        "timestamp": _dt.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "currency": "KD",
-        "source": "manual_admin_entry",  # ⚖️ علامة قانونية: المصدر إدخال يدوي
-    }
-
-    products = _read_json(PRODUCTS_FILE, [])
-    if not isinstance(products, list):
-        products = []
-    products.append(record)
-    _write_json(PRODUCTS_FILE, products)
-
-    history = _read_json(HISTORY_FILE, [])
-    if not isinstance(history, list):
-        history = []
-    history.append(record)
-    _write_json(HISTORY_FILE, history)
-
-    return True
-
-
-def delete_product_by_index(idx: int) -> bool:
-    products = _read_json(PRODUCTS_FILE, [])
-    if not isinstance(products, list) or idx < 0 or idx >= len(products):
-        return False
-    products.pop(idx)
-    _write_json(PRODUCTS_FILE, products)
-    return True
-
-
-def run_processing(run_ai: bool = False):
-    """يشغّل المطابقة (وعميل AI اختيارياً) على بيانات محلية فقط — لا scraping."""
-    steps = [BASE_DIR / "matcher.py"]
+def run_update(run_ai: bool = False):
+    steps = [BASE_DIR / "scraper.py", BASE_DIR / "matcher.py"]
     if run_ai:
         steps.append(BASE_DIR / "ai_agent.py")
-    with st.spinner("جاري معالجة البيانات محلياً ..."):
+    with st.spinner("جاري التحديث ..."):
         try:
             for script in steps:
                 subprocess.run([sys.executable, str(script)], timeout=600, check=True, capture_output=True)
             reload_all()
-            st.success("✅ تمت المعالجة بنجاح")
+            st.success("✅ تم التحديث بنجاح")
+            st.rerun()
+        except Exception as e:
+            st.error(f"❌ فشل: {str(e)[:120]}")
+
+
+def run_ai_only():
+    with st.spinner("عميل AI يعمل ..."):
+        try:
+            subprocess.run([sys.executable, str(BASE_DIR / "ai_agent.py")], timeout=600, check=True, capture_output=True)
+            reload_all()
+            st.success("✅ تم التوليد بنجاح")
             st.rerun()
         except Exception as e:
             st.error(f"❌ فشل: {str(e)[:120]}")
 
 
 # ─────────────────────────────────────────────────────────────────
-# ⚖️ لا يوجد scraping ولا scheduler إطلاقاً.
-# جميع البيانات تُدخَل يدوياً من الأدمن. هذا الإصدار قانوني 100%.
+# SCHEDULER (local only)
 # ─────────────────────────────────────────────────────────────────
-sched_ok = False
+if not IS_CLOUD and "scheduler_started" not in st.session_state:
+    try:
+        from scheduler import start_scheduler
+        st.session_state["scheduler"] = start_scheduler()
+        st.session_state["scheduler_started"] = True
+    except Exception:
+        st.session_state["scheduler_started"] = False
+
+sched_ok = not IS_CLOUD and st.session_state.get("scheduler_started", False)
 
 # ─────────────────────────────────────────────────────────────────
 # LOAD DATA
@@ -617,84 +574,54 @@ with st.sidebar:
         if st.button("♻️ مسح الكاش", use_container_width=True):
             reload_all(); st.rerun()
     else:
-        # ─── إدخال يدوي للأدمن (لا scraping) ─────────────────────
-        # كلمة سر الأدمن
-        admin_pw = ""
-        try:
-            admin_pw = st.secrets.get("ADMIN_PASSWORD", "")
-        except Exception:
-            pass
-        if not admin_pw:
-            admin_pw = os.environ.get("ADMIN_PASSWORD", "")
+        # ─── Admin-gated monthly update ──────────────────────────
+        from scheduler import can_run_this_month, run_monthly_update
 
-        with st.popover("➕ إدخال يدوي للمنتجات", use_container_width=True):
-            st.markdown("**إضافة منتج جديد (Admin فقط)**")
+        with st.popover("⚙️ تحديث البيانات", use_container_width=True):
+            st.markdown("**التحديث الشهري (Admin فقط)**")
             st.caption(
-                "⚖️ جميع البيانات تُدخَل يدوياً من الأدمن — لا يوجد جلب آلي "
-                "من أي موقع، لضمان الامتثال القانوني الكامل."
+                "⚖️ يُسمح بمرة واحدة فقط بالشهر — التزاماً بسياسات المتاجر "
+                "وقواعس robots.txt. يتطلب صلاحية أدمن."
             )
 
+            allowed, msg = can_run_this_month()
+            if not allowed:
+                st.warning(f"⛔ {msg}")
+            else:
+                st.success("✅ يُسمح بالتشغيل هذا الشهر")
+
+            # admin password — من st.secrets أو متغيّر بيئة
+            admin_pw = ""
+            try:
+                admin_pw = st.secrets.get("ADMIN_PASSWORD", "")
+            except Exception:
+                pass
+            if not admin_pw:
+                admin_pw = os.environ.get("ADMIN_PASSWORD", "")
+
             entered = st.text_input("كلمة سر الأدمن", type="password", key="admin_pw_input")
-            is_admin = bool(admin_pw) and entered == admin_pw
+            agree = st.checkbox(
+                "أُقرّ بأنني الأدمن، وأن الاستخدام شخصي/استشاري، "
+                "وأن البيانات لن تُنشَر تجارياً.",
+                key="admin_legal_agree",
+            )
+
+            disabled = (not allowed) or (not agree) or (not admin_pw) or (entered != admin_pw)
+            if st.button("🔄 تشغيل التحديث الشهري", use_container_width=True, disabled=disabled):
+                with st.spinner("جاري التحديث الشهري ..."):
+                    res = run_monthly_update()
+                if res.get("ok"):
+                    reload_all()
+                    st.success("✅ تم التحديث الشهري بنجاح")
+                    st.rerun()
+                else:
+                    st.error(f"❌ {res.get('msg','فشل التحديث')}")
 
             if not admin_pw:
-                st.info("ℹ️ أضِف `ADMIN_PASSWORD` في `.streamlit/secrets.toml` أو متغيّر بيئة.")
-            elif not is_admin:
-                st.warning("🔒 أدخل كلمة سر الأدمن للمتابعة.")
-            else:
-                with st.form("manual_add_product", clear_on_submit=True):
-                    p_name  = st.text_input("اسم المنتج *")
-                    p_store = st.text_input("اسم المتجر / المورد *")
-                    p_price = st.number_input("السعر (د.ك) *", min_value=0.0, step=0.05, format="%.3f")
-                    p_url   = st.text_input("رابط المرجع (اختياري)")
-                    agree = st.checkbox(
-                        "أُقرّ بأن البيانات صحيحة وأنني مخوَّل بإدخالها.",
-                    )
-                    submit = st.form_submit_button("💾 حفظ المنتج", use_container_width=True)
-                    if submit:
-                        if not agree:
-                            st.error("يجب الإقرار قبل الحفظ.")
-                        elif add_manual_product(p_name, p_price, p_store, p_url):
-                            reload_all()
-                            st.success(f"✅ تم حفظ: {p_name}")
-                            st.rerun()
-                        else:
-                            st.error("❌ بيانات ناقصة — تحقق من الاسم والمتجر والسعر.")
-
-                st.divider()
-                st.markdown("**📂 رفع دفعة منتجات (CSV / JSON)**")
-                upl = st.file_uploader(
-                    "ملف بأعمدة: name, price, store, url (اختياري)",
-                    type=["csv", "json"], key="bulk_upload",
+                st.info(
+                    "ℹ️ لم يُعدّ ADMIN_PASSWORD بعد. أضِفه في "
+                    "`.streamlit/secrets.toml` أو متغيّر بيئة قبل التشغيل."
                 )
-                if upl is not None and st.button("📥 استيراد الدفعة", use_container_width=True):
-                    try:
-                        if upl.name.endswith(".csv"):
-                            bulk_df = pd.read_csv(upl)
-                        else:
-                            bulk_df = pd.DataFrame(json.load(upl))
-                        ok = 0
-                        for _, row in bulk_df.iterrows():
-                            if add_manual_product(
-                                str(row.get("name", "")),
-                                float(row.get("price", 0) or 0),
-                                str(row.get("store", "")),
-                                str(row.get("url", "")),
-                            ):
-                                ok += 1
-                        reload_all()
-                        st.success(f"✅ تم استيراد {ok} منتج")
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"❌ فشل الاستيراد: {str(e)[:120]}")
-
-                st.divider()
-                st.markdown("**⚙️ معالجة محلية للبيانات**")
-                st.caption("تشغيل المطابقة وتوصيف الأعمال على البيانات المُدخلة يدوياً.")
-                if st.button("🔗 تشغيل المطابقة", use_container_width=True):
-                    run_processing(run_ai=False)
-                if st.button("🤖 المطابقة + توصيف AI", use_container_width=True):
-                    run_processing(run_ai=True)
 
             st.divider()
             if st.button("♻️ مسح الكاش", use_container_width=True):
