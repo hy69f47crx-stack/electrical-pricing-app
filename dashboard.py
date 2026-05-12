@@ -52,319 +52,6 @@ st.set_page_config(
     layout="wide",
 )
 
-# ─────────────────────────────────────────────────────────────────
-# LOGIN SYSTEM
-# ─────────────────────────────────────────────────────────────────
-def load_users() -> dict:
-    """تحميل المستخدمين من users.json"""
-    try:
-        with open(BASE_DIR / "users.json", "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return {}
-
-def save_users(users: dict):
-    """حفظ المستخدمين في users.json"""
-    with open(BASE_DIR / "users.json", "w", encoding="utf-8") as f:
-        json.dump(users, f, ensure_ascii=False, indent=2)
-
-def login_user(username: str, password: str) -> bool:
-    """التحقق من بيانات المستخدم"""
-    users = load_users()
-    return username in users and users[username] == password
-
-def register_user(username: str, password: str) -> bool:
-    """تسجيل مستخدم جديد"""
-    if not username or not password:
-        return False
-    users = load_users()
-    if username in users:
-        return False
-    users[username] = password
-    save_users(users)
-    return True
-
-# عرض صفحة تسجيل الدخول إذا لم يكن المستخدم مسجل دخول
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-    st.session_state.username = None
-
-if not st.session_state.logged_in:
-    # تصميم جميل للدخول — بنفس الجمالية من التصميم السابق
-    st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap');
-
-    * { font-family: 'Cairo', system-ui, sans-serif; direction: rtl; }
-
-    .login-container {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #2A241A 0%, #3D3422 50%, #5A4A2C 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-
-    .login-card {
-        background: #FBF7EC;
-        border-radius: 16px;
-        padding: 48px 36px;
-        box-shadow: 0 20px 60px rgba(20,15,5,0.2);
-        max-width: 420px;
-        width: 100%;
-    }
-
-    .login-header {
-        text-align: center;
-        margin-bottom: 36px;
-    }
-
-    .login-icon {
-        width: 64px;
-        height: 64px;
-        background: linear-gradient(135deg, #E5C589 0%, #C49A55 100%);
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 16px;
-        font-size: 32px;
-        box-shadow: 0 8px 22px rgba(196,154,85,0.3);
-    }
-
-    .login-title {
-        font-size: 28px;
-        font-weight: 700;
-        color: #2A241A;
-        margin: 0;
-    }
-
-    .login-subtitle {
-        font-size: 14px;
-        color: #847962;
-        margin-top: 8px;
-    }
-
-    .login-form {
-        margin-bottom: 24px;
-    }
-
-    .login-input {
-        width: 100%;
-        padding: 12px 14px;
-        border: 1px solid #DCD2BB;
-        border-radius: 12px;
-        font-size: 14px;
-        margin-bottom: 16px;
-        font-family: inherit;
-        background: #FBF7EC;
-    }
-
-    .login-input:focus {
-        outline: none;
-        border-color: #E5C589;
-        box-shadow: 0 0 0 4px rgba(229,197,137,0.12);
-    }
-
-    .login-btn {
-        width: 100%;
-        padding: 12px;
-        background: #2A241A;
-        color: #FBF7EC;
-        border: none;
-        border-radius: 12px;
-        font-size: 15px;
-        font-weight: 600;
-        cursor: pointer;
-        margin-bottom: 12px;
-        font-family: inherit;
-        transition: all 0.2s ease;
-    }
-
-    .login-btn:hover {
-        background: #1a140a;
-        box-shadow: 0 6px 16px rgba(20,15,5,0.2);
-    }
-
-    .login-tab-btns {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-bottom: 24px;
-    }
-
-    .login-tab-btn {
-        padding: 10px;
-        background: transparent;
-        border: 2px solid #DCD2BB;
-        color: #847962;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 13px;
-        font-family: inherit;
-        transition: all 0.2s ease;
-    }
-
-    .login-tab-btn.active {
-        border-color: #E5C589;
-        color: #2A241A;
-        background: rgba(229,197,137,0.1);
-    }
-
-    .login-error {
-        padding: 12px;
-        background: #ffe5e5;
-        border: 1px solid #ffcccc;
-        color: #c00;
-        border-radius: 8px;
-        font-size: 13px;
-        margin-bottom: 12px;
-        text-align: center;
-    }
-
-    .login-success {
-        padding: 12px;
-        background: #e5ffe5;
-        border: 1px solid #ccffcc;
-        color: #060;
-        border-radius: 8px;
-        font-size: 13px;
-        margin-bottom: 12px;
-        text-align: center;
-    }
-
-    .login-users {
-        background: #F6F1E3;
-        padding: 16px;
-        border-radius: 12px;
-        margin-top: 20px;
-    }
-
-    .login-users h4 {
-        margin: 0 0 12px;
-        color: #2A241A;
-        font-size: 14px;
-    }
-
-    .login-user-item {
-        padding: 8px;
-        color: #4F4636;
-        font-size: 13px;
-        margin-bottom: 4px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    # JavaScript بسيط للتبديل بين التسجيل والدخول
-    login_or_register = "login"  # القيمة الافتراضية
-
-    col1, col2, col3 = st.columns([1, 1.2, 1])
-    with col2:
-        tab1, tab2 = st.tabs(["🔓 دخول", "📝 تسجيل جديد"])
-
-        with tab1:
-            st.markdown('<div class="login-card">', unsafe_allow_html=True)
-            st.markdown('''
-            <div class="login-header">
-                <div class="login-icon">⚡</div>
-                <h1 class="login-title">تسجيل الدخول</h1>
-                <p class="login-subtitle">أدخل بياناتك للمتابعة</p>
-            </div>
-            ''', unsafe_allow_html=True)
-
-            username = st.text_input(
-                "اسم المستخدم",
-                key="login_user",
-                placeholder="أدخل اسم المستخدم",
-                label_visibility="collapsed"
-            )
-            password = st.text_input(
-                "كلمة السر",
-                type="password",
-                key="login_pass",
-                placeholder="أدخل كلمة السر",
-                label_visibility="collapsed"
-            )
-
-            col_a, col_b = st.columns(2)
-            with col_a:
-                login_btn = st.button("🔓 دخول", use_container_width=True, key="login_btn")
-
-            if login_btn:
-                if not username or not password:
-                    st.markdown('<div class="login-error">❌ الرجاء ملء جميع الحقول</div>', unsafe_allow_html=True)
-                elif login_user(username, password):
-                    st.session_state.logged_in = True
-                    st.session_state.username = username
-                    st.markdown(f'<div class="login-success">✅ مرحباً {username}</div>', unsafe_allow_html=True)
-                    import time
-                    time.sleep(0.5)
-                    st.rerun()
-                else:
-                    st.markdown('<div class="login-error">❌ بيانات خاطئة</div>', unsafe_allow_html=True)
-
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        with tab2:
-            st.markdown('<div class="login-card">', unsafe_allow_html=True)
-            st.markdown('''
-            <div class="login-header">
-                <div class="login-icon">⭐</div>
-                <h1 class="login-title">حساب جديد</h1>
-                <p class="login-subtitle">سجّل حسابك الآن</p>
-            </div>
-            ''', unsafe_allow_html=True)
-
-            new_user = st.text_input(
-                "اسم مستخدم جديد",
-                key="reg_user",
-                placeholder="اختر اسم مستخدم",
-                label_visibility="collapsed"
-            )
-            new_pass = st.text_input(
-                "كلمة سر",
-                type="password",
-                key="reg_pass",
-                placeholder="اختر كلمة سر قوية",
-                label_visibility="collapsed"
-            )
-
-            reg_btn = st.button("📝 تسجيل", use_container_width=True, key="reg_btn")
-
-            if reg_btn:
-                if not new_user or not new_pass:
-                    st.markdown('<div class="login-error">❌ الرجاء ملء جميع الحقول</div>', unsafe_allow_html=True)
-                elif register_user(new_user, new_pass):
-                    st.markdown(f'<div class="login-success">✅ تم التسجيل — سجّل الدخول الآن</div>', unsafe_allow_html=True)
-                    import time
-                    time.sleep(1)
-                    st.rerun()
-                else:
-                    st.markdown('<div class="login-error">❌ المستخدم موجود أو بيانات ناقصة</div>', unsafe_allow_html=True)
-
-            st.markdown('</div>', unsafe_allow_html=True)
-
-    # عرض المستخدمين على الجانب
-    col4, col5 = st.columns([1, 1])
-    with col4:
-        st.markdown('<div class="login-card">', unsafe_allow_html=True)
-        st.markdown('''
-        <div class="login-users">
-            <h4>👥 المستخدمون المسجلون</h4>
-        ''', unsafe_allow_html=True)
-
-        users = load_users()
-        if users:
-            for user in users.keys():
-                st.markdown(f'<div class="login-user-item">• {user}</div>', unsafe_allow_html=True)
-        else:
-            st.markdown('<div class="login-user-item" style="color:#a09a94">لا يوجد مستخدمون</div>', unsafe_allow_html=True)
-
-        st.markdown('</div></div>', unsafe_allow_html=True)
-
-    st.stop()
 
 # ─────────────────────────────────────────────────────────────────
 # CSS — Minimal Cream Theme (inspired by modern analytics UI)
@@ -866,29 +553,6 @@ with st.sidebar:
 
     st.divider()
 
-    # ─── معلومات المستخدم والخروج ──────────────────────────────
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        st.write(f"👤 **{st.session_state.username}**")
-    with col2:
-        if st.button("🚪 خروج", use_container_width=True):
-            st.session_state.logged_in = False
-            st.session_state.username = None
-            st.rerun()
-
-    st.divider()
-
-    # ─── قائمة المستخدمين المسجلين (للأدمن فقط) ──────────────────
-    if st.session_state.username == "admin":
-        with st.expander("📋 المستخدمون المسجلون"):
-            users = load_users()
-            st.write(f"**العدد:** {len(users)}")
-            st.write("**الأسماء:**")
-            for user in users.keys():
-                st.write(f"  • {user}")
-
-    st.divider()
-
     page = st.radio(
         "nav",
         ["🏠 الرئيسية", "📦 المنتجات", "📂 الفئات والتفريعات",
@@ -911,48 +575,42 @@ with st.sidebar:
         if st.button("♻️ مسح الكاش", use_container_width=True):
             reload_all(); st.rerun()
     else:
-        # ─── Admin-gated monthly update ──────────────────────────
-        if st.session_state.username == "admin":
-            from scheduler import can_run_this_month, run_monthly_update
+        # ─── Admin-only monthly update ──────────────────────────
+        from scheduler import can_run_this_month, run_monthly_update
 
-            with st.popover("⚙️ تحديث البيانات", use_container_width=True):
-                st.markdown("**التحديث الشهري**")
-                st.caption(
-                    "⚖️ يُسمح بمرة واحدة فقط بالشهر — التزاماً بسياسات المتاجر "
-                    "وقواعس robots.txt."
-                )
+        with st.popover("⚙️ تحديث البيانات", use_container_width=True):
+            st.markdown("**التحديث الشهري**")
+            st.caption(
+                "⚖️ يُسمح بمرة واحدة فقط بالشهر — التزاماً بسياسات المتاجر "
+                "وقواعس robots.txt."
+            )
 
-                allowed, msg = can_run_this_month()
-                if not allowed:
-                    st.warning(f"⛔ {msg}")
+            allowed, msg = can_run_this_month()
+            if not allowed:
+                st.warning(f"⛔ {msg}")
+            else:
+                st.success("✅ يُسمح بالتشغيل هذا الشهر")
+
+            agree = st.checkbox(
+                "أُقرّ بأن الاستخدام شخصي/استشاري، "
+                "وأن البيانات لن تُنشَر تجارياً.",
+                key="admin_legal_agree",
+            )
+
+            disabled = (not allowed) or (not agree)
+            if st.button("🔄 تشغيل التحديث الشهري", use_container_width=True, disabled=disabled):
+                with st.spinner("جاري التحديث الشهري ..."):
+                    res = run_monthly_update()
+                if res.get("ok"):
+                    reload_all()
+                    st.success("✅ تم التحديث الشهري بنجاح")
+                    st.rerun()
                 else:
-                    st.success("✅ يُسمح بالتشغيل هذا الشهر")
+                    st.error(f"❌ {res.get('msg','فشل التحديث')}")
 
-                agree = st.checkbox(
-                    "أُقرّ بأن الاستخدام شخصي/استشاري، "
-                    "وأن البيانات لن تُنشَر تجارياً.",
-                    key="admin_legal_agree",
-                )
-
-                disabled = (not allowed) or (not agree)
-                if st.button("🔄 تشغيل التحديث الشهري", use_container_width=True, disabled=disabled):
-                    with st.spinner("جاري التحديث الشهري ..."):
-                        res = run_monthly_update()
-                    if res.get("ok"):
-                        reload_all()
-                        st.success("✅ تم التحديث الشهري بنجاح")
-                        st.rerun()
-                    else:
-                        st.error(f"❌ {res.get('msg','فشل التحديث')}")
-
-                st.divider()
-                if st.button("♻️ مسح الكاش", use_container_width=True):
-                    reload_all(); st.rerun()
-        else:
-            with st.popover("⚙️ تحديث البيانات", use_container_width=True):
-                st.info("🔒 هذه الميزة للأدمن فقط")
-                if st.button("♻️ مسح الكاش", use_container_width=True):
-                    reload_all(); st.rerun()
+            st.divider()
+            if st.button("♻️ مسح الكاش", use_container_width=True):
+                reload_all(); st.rerun()
 
     st.divider()
     c1, c2 = st.columns(2)
