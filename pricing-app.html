@@ -202,7 +202,7 @@ body{font-family:"IBM Plex Sans Arabic","Tajawal",system-ui,sans-serif;backgroun
   height:100vh;
   display:flex;
   flex-direction:column;
-  overflow:hidden;
+  overflow:visible;
   background:var(--bg);
   color:var(--ink);
   margin:0;
@@ -2528,10 +2528,6 @@ function MindMapScreen() {
   const [caseNum,      setCaseNum]      = React.useState('ق.إ/2024/45');
   const [contractDate, setContractDate] = React.useState('2023-06-15');
   const [workStart,    setWorkStart]    = React.useState('2023-07-01');
-  const [payment1,     setPayment1]     = React.useState('2023-08-10');
-  const [payment2,     setPayment2]     = React.useState('2023-11-20');
-  const [disputeDate,  setDisputeDate]  = React.useState('2024-02-15');
-  const [inspectDate,  setInspectDate]  = React.useState('2024-03-10');
   const [activeTab,    setActiveTab]    = React.useState('mindmap');
   const [customEvents, setCustomEvents] = React.useState([]);
 
@@ -2561,10 +2557,6 @@ function MindMapScreen() {
   const builtIn = [
     { date: contractDate, label: 'إبرام العقد',        type: 'عقد'     },
     { date: workStart,    label: 'بدء الأعمال',         type: 'بدء'    },
-    { date: payment1,     label: 'صرف الدفعة الأولى',  type: 'دفعة'   },
-    { date: payment2,     label: 'صرف الدفعة الثانية', type: 'دفعة'   },
-    { date: disputeDate,  label: 'تاريخ النزاع',        type: 'نزاع'   },
-    { date: inspectDate,  label: 'تاريخ المعاينة',      type: 'معاينة' },
   ];
   const allEvents = [...builtIn, ...customEvents.filter(e => e.date && e.label)]
     .filter(e => e.date)
@@ -2678,22 +2670,6 @@ function MindMapScreen() {
           <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>بدء الأعمال</label>
           <input type="date" value={workStart} onChange={e=>setWorkStart(e.target.value)} style={inpStyle}/>
         </div>
-        <div>
-          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>صرف الدفعة الأولى</label>
-          <input type="date" value={payment1} onChange={e=>setPayment1(e.target.value)} style={inpStyle}/>
-        </div>
-        <div>
-          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>صرف الدفعة الثانية</label>
-          <input type="date" value={payment2} onChange={e=>setPayment2(e.target.value)} style={inpStyle}/>
-        </div>
-        <div>
-          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>تاريخ النزاع</label>
-          <input type="date" value={disputeDate} onChange={e=>setDisputeDate(e.target.value)} style={inpStyle}/>
-        </div>
-        <div>
-          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>تاريخ المعاينة</label>
-          <input type="date" value={inspectDate} onChange={e=>setInspectDate(e.target.value)} style={inpStyle}/>
-        </div>
       </div>
 
       {/* ── Custom events (compact rows) ── */}
@@ -2779,7 +2755,6 @@ function MindMapScreen() {
             <div style={{padding:'12px',border:'1px solid var(--line)',borderRadius:'6px',backgroundColor:'var(--bg)'}}>
               <div style={{fontWeight:'bold',marginBottom:'6px',color:'var(--ink-2)'}}>✅ الالتزامات</div>
               <div style={{fontSize:'0.88em',lineHeight:'1.7'}}>
-                <div>• صرف الدفعات المالية</div>
                 <div>• تنفيذ الأعمال الهندسية</div>
                 <div>• الفحص والقبول</div>
               </div>
@@ -2911,14 +2886,14 @@ function CalculatorScreen() {
 
     // quality
     let qTot=0;
-    const dds = defects.map(d => {
+    const dds = enQuality ? defects.map(d => {
       const dp = value * 0.01 * (mults[d.sev]||1) * (parseInt(d.qty)||1);
       qTot += dp;
       return { ...d, pen: Math.round(dp*100)/100, sevL: sevLbl[d.sev] };
-    });
+    }) : [];
 
     const totPen  = Math.round((dFin + qTot)*100)/100;
-    const earn    = parseFloat(earned) || value;
+    const earn    = earned !== '' ? (parseFloat(earned) || 0) : value;
     const totDed  = (parseFloat(retention)||0) + (parseFloat(advance)||0) + (parseFloat(otherDed)||0);
     const varsV   = parseFloat(vars)||0;
     const balance = Math.round((earn - totDed - totPen + varsV)*100)/100;
