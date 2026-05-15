@@ -1,33 +1,10 @@
+# Environment
+.env
+.streamlit/secrets.toml
+
 # Python
 __pycache__/
-*.py[cod]
+*.pyc
 *.pyo
-*.pyd
-*.egg-info/
-dist/
-build/
-
-# Virtual environments
-venv/
-env/
 .venv/
-
-# Data & uploads (keep structure, not content)
-data/uploads/
-data/*.db
-data/.password_hash
-
-# Models (large binary)
-models/*.pkl
-models/*.joblib
-
-# macOS
-.DS_Store
-**/.DS_Store
-
-# IDE
-.vscode/
-.idea/
-
-# Logs
-*.log
+venv/
